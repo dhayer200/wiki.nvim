@@ -614,9 +614,27 @@ function inline(s, ext) {
 function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── Reader panel ───────────────────────────────────────────────────────────
+function panToNode(n) {
+  const targetTx = W / 2 - n.x * sc;
+  const targetTy = H / 2 - n.y * sc;
+  const startTx = tx, startTy = ty;
+  const startTime = performance.now();
+  const duration = 420;
+  function step(now) {
+    const t = Math.min(1, (now - startTime) / duration);
+    const ease = t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t;
+    tx = startTx + (targetTx - startTx) * ease;
+    ty = startTy + (targetTy - startTy) * ease;
+    applyTransform();
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function openReader(id) {
   const n = nodeById[id];
   if (!n) return;
+  panToNode(n);
   document.getElementById('reader-title').textContent = n.id;
   document.getElementById('reader-body').innerHTML = renderContent(n.content, n.ext);
   document.getElementById('reader').classList.add('open');
