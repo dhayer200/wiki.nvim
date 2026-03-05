@@ -260,24 +260,24 @@ tr.hl td{background:#fef9c3}
       <button onclick="document.getElementById('controls').style.display='none';document.getElementById('controls-toggle').style.display='block'">&#x2715;</button>
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Repulsion</span><span class="ctrl-val" id="rv">280</span></div>
-      <input type="range" id="s-repulse" min="50" max="700" value="280">
+      <div class="ctrl-label"><span>Repulsion</span><span class="ctrl-val" id="rv">500</span></div>
+      <input type="range" id="s-repulse" min="50" max="1200" value="500">
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Link Distance</span><span class="ctrl-val" id="ldv">120</span></div>
-      <input type="range" id="s-dist" min="20" max="300" value="120">
+      <div class="ctrl-label"><span>Link Distance</span><span class="ctrl-val" id="ldv">160</span></div>
+      <input type="range" id="s-dist" min="20" max="400" value="160">
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">15</span></div>
-      <input type="range" id="s-center" min="1" max="60" value="15">
+      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">12</span></div>
+      <input type="range" id="s-center" min="1" max="60" value="12">
     </div>
     <div class="ctrl-row">
       <div class="ctrl-label"><span>Node Size</span><span class="ctrl-val" id="nsv">10</span></div>
       <input type="range" id="s-size" min="3" max="24" value="10">
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Labels</span><span class="ctrl-val" id="lv">Auto</span></div>
-      <input type="range" id="s-labels" min="0" max="2" step="1" value="1">
+      <div class="ctrl-label"><span>Labels</span></div>
+      <button id="btn-labels" style="width:100%;background:#3a3d45;border:1px solid #5a5d65;border-radius:3px;color:#d0d3db;padding:3px 0;cursor:pointer;font-size:.8rem">On</button>
     </div>
   </div>
   <button id="controls-toggle" onclick="document.getElementById('controls').style.display='block';this.style.display='none'">&#x2699; Settings</button>
@@ -346,26 +346,30 @@ window.addEventListener('mousemove', e => {
 window.addEventListener('mouseup', () => { panning = false; wrap.classList.remove('panning'); });
 
 // ── Physics params (live-editable) ────────────────────────────────────────
-let REPULSE    = -280;
-let LINK_DIST  = 120;
-let CENTER_F   = 0.015;
+let REPULSE    = 500;
+let LINK_DIST  = 160;
+let CENTER_F   = 0.012;
 let BASE_R     = 10;
-let LABEL_MODE = 1; // 0=off 1=auto 2=always
+let LABEL_MODE = 1; // 0=off 1=on
 
 function wireSlider(id, valId, onInput) {
   const el = document.getElementById(id);
   el.addEventListener('input', () => {
     onInput(parseFloat(el.value));
-    document.getElementById(valId).textContent =
-      id === 's-labels' ? ['Off','Auto','Always'][parseInt(el.value)] : el.value;
+    document.getElementById(valId).textContent = el.value;
     reheat();
   });
 }
-wireSlider('s-repulse', 'rv',     v => { REPULSE   = -v; });
-wireSlider('s-dist',    'ldv',    v => { LINK_DIST  = v; });
-wireSlider('s-center',  'cfv',    v => { CENTER_F   = v / 1000; });
-wireSlider('s-size',    'nsv',    v => { BASE_R = v; updateNodeSizes(); });
-wireSlider('s-labels',  'lv',     v => { LABEL_MODE = parseInt(v); updateLabelVisibility(); });
+wireSlider('s-repulse', 'rv',  v => { REPULSE  = v; });
+wireSlider('s-dist',    'ldv', v => { LINK_DIST = v; });
+wireSlider('s-center',  'cfv', v => { CENTER_F  = v / 1000; });
+wireSlider('s-size',    'nsv', v => { BASE_R = v; updateNodeSizes(); });
+
+document.getElementById('btn-labels').addEventListener('click', () => {
+  LABEL_MODE = LABEL_MODE === 1 ? 0 : 1;
+  document.getElementById('btn-labels').textContent = LABEL_MODE === 1 ? 'On' : 'Off';
+  updateLabelVisibility();
+});
 
 function updateNodeSizes() {
   nodes.forEach(n => {
@@ -379,14 +383,10 @@ function updateNodeSizes() {
 }
 
 function updateLabelVisibility() {
-  nodeEls.forEach((el, i) => {
+  nodeEls.forEach(el => {
     const text = el.querySelector('text');
     if (!text) return;
-    if (LABEL_MODE === 0) { text.style.opacity = 0; return; }
-    if (LABEL_MODE === 2) { text.style.opacity = 1; return; }
-    // auto: fade in with zoom
-    const t = Math.max(0, Math.min(1, (sc - 0.5) / 0.5));
-    text.style.opacity = t;
+    text.style.opacity = LABEL_MODE === 1 ? 1 : 0;
   });
 }
 
@@ -449,7 +449,7 @@ const nodeEls = nodes.map(n => {
   text.setAttribute('dy', '0.35em');
   text.setAttribute('x', r + 3);
   text.textContent = n.id;
-  text.style.opacity = 0;
+  text.style.opacity = 1;
 
   grp.appendChild(circle);
   grp.appendChild(text);
@@ -466,8 +466,8 @@ const nodeEls = nodes.map(n => {
       const connected = l.source.id === n.id || l.target.id === n.id;
       el.classList.toggle('highlighted', connected);
     });
-    // show label regardless of zoom
-    text.style.opacity = 1;
+    // always show label on hover
+    text.style.opacity = 1; // hover always shows
   });
   grp.addEventListener('mouseleave', () => {
     document.getElementById('snap').style.display = 'none';
@@ -500,7 +500,7 @@ const nodeEls = nodes.map(n => {
 
 // ── Force simulation ───────────────────────────────────────────────────────
 let alpha = 1;
-const ALPHA_DECAY = 0.02, ALPHA_MIN = 0.001, VEL_DECAY = 0.42;
+const ALPHA_DECAY = 0.018, ALPHA_MIN = 0.001, VEL_DECAY = 0.3;
 
 function simTick() {
   if (alpha < ALPHA_MIN) return;
@@ -529,7 +529,7 @@ function simTick() {
   links.forEach(l => {
     const dx = l.target.x-l.source.x, dy = l.target.y-l.source.y;
     const d = Math.sqrt(dx*dx+dy*dy)||1;
-    const f = (d-LINK_DIST)/d*0.28*alpha;
+    const f = (d-LINK_DIST)/d*0.5*alpha;
     if (l.source.fx==null){l.source.vx+=f*dx; l.source.vy+=f*dy;}
     if (l.target.fx==null){l.target.vx-=f*dx; l.target.vy-=f*dy;}
   });
@@ -540,7 +540,7 @@ function simTick() {
       const a = nodes[i], b = nodes[j];
       const dx = b.x-a.x, dy = b.y-a.y, d = Math.sqrt(dx*dx+dy*dy)||1;
       if (d < collideR) {
-        const ov = (collideR-d)/d*0.5;
+        const ov = (collideR-d)/d*0.9;
         if (a.fx==null){a.vx-=dx*ov; a.vy-=dy*ov;}
         if (b.fx==null){b.vx+=dx*ov; b.vy+=dy*ov;}
       }
