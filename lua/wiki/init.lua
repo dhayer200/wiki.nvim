@@ -49,6 +49,10 @@ function Wiki.setup(opts)
     require("wiki.gf").gf_create(Wiki)
   end, { desc = "Follow or create wikilink under cursor" })
 
+  vim.api.nvim_create_user_command("WikiGraph", function()
+    require("wiki.graph").generate(Wiki)
+  end, { desc = "Generate and open wiki graph in browser" })
+
 end
 
 return Wiki
