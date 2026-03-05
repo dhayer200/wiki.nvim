@@ -99,8 +99,8 @@ function M.generate(Wiki)
     local b = n.blurb ~= "" and n.blurb or "No description yet."
     if #b > 130 then b = b:sub(1, 130) .. "…" end
     table.insert(cards, string.format(
-      '<div class="card" onclick="openReader(%s)"><div class="card-title">%s</div><div class="card-blurb">%s</div></div>',
-      jstr(n.id), hesc(n.id), hesc(b)
+      "<div class='card' onclick=\"openReader('%s')\"><div class='card-title'>%s</div><div class='card-blurb'>%s</div></div>",
+      n.id, hesc(n.id), hesc(b)
     ))
   end
 
@@ -110,14 +110,14 @@ function M.generate(Wiki)
     for _, l in ipairs(n.links) do
       if node_index[l] then
         table.insert(tags, string.format(
-          '<span class="tag" onclick="openReader(%s)">%s</span>', jstr(l), hesc(l)
+          "<span class='tag' onclick=\"openReader('%s')\">%s</span>", l, hesc(l)
         ))
       end
     end
     local links_html = #tags > 0 and table.concat(tags) or '<span class="dim">—</span>'
     table.insert(rows, string.format(
-      '<tr id="row-%s"><td class="note-name" onclick="openReader(%s)">%s</td><td>%s</td></tr>',
-      hesc(n.id), jstr(n.id), hesc(n.id), links_html
+      "<tr id='row-%s'><td class='note-name' onclick=\"openReader('%s')\">%s</td><td>%s</td></tr>",
+      hesc(n.id), n.id, hesc(n.id), links_html
     ))
   end
 
