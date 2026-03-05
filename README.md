@@ -8,6 +8,7 @@ A lightweight personal wiki plugin for Neovim. Navigate and create `[[wikilink]]
 - Backlinks via quickfix
 - Outgoing + backlink panel in a vertical split
 - Wikilink completion (`<C-x><C-u>`) in markdown, typst, and text files
+- User commands for all actions
 - Configurable root directory and file extensions
 
 ## Requirements
@@ -16,8 +17,6 @@ A lightweight personal wiki plugin for Neovim. Navigate and create `[[wikilink]]
 - [`ripgrep`](https://github.com/BurntSushi/ripgrep) (for backlinks)
 
 ## Installation
-
-With any plugin manager, point it at this repo and call `setup()`.
 
 **vim-plug**
 ```vim
@@ -38,21 +37,34 @@ vim.pack.add({ src = "https://github.com/dhayer200/wiki.nvim" })
 
 ```lua
 require("wiki").setup({
-  root = "~/brain/notes",          -- default
+  root = "~/brain/notes",               -- default
   extensions = { "md", "typ", "txt" },  -- default
 })
 ```
 
+## Commands
+
+| Command | Action |
+|---------|--------|
+| `:WikiCreate` | Open wikilink under cursor; create file if it doesn't exist |
+| `:WikiLink` | Same as `:WikiCreate` |
+| `:WikiBacklinks` | Show backlinks to current note in quickfix |
+| `:WikiPanel` | Open panel with outgoing links and backlinks |
+| `:WikiHelp` | Open wiki helper.md reference in a vertical split |
+
 ## Keymaps
 
-| Key | Action |
-|-----|--------|
-| `gf` | Open wikilink under cursor; create file if it doesn't exist |
-| `<leader>wb` | Show backlinks to current note in quickfix |
-| `<leader>ww` | Open panel with outgoing links and backlinks |
-| `<C-x><C-u>` | Complete `[[wikilinks]]` (in markdown / typst / text files) |
+The plugin sets `gf` to open/create wikilinks. Bind the commands however you like:
+
+```lua
+vim.keymap.set("n", "<leader>wb", ":WikiBacklinks<cr>")
+vim.keymap.set("n", "<leader>ww", ":WikiPanel<cr>")
+vim.keymap.set("n", "<leader>hh", ":WikiHelp<cr>")
+```
 
 In the links panel: `<CR>` jumps to the note, `q` closes.
+
+Wikilink completion triggers with `<C-x><C-u>` inside any `[[` in markdown, typst, or text files.
 
 ## License
 
