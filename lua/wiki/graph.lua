@@ -268,8 +268,8 @@ tr.hl td{background:#fef9c3}
       <input type="range" id="s-dist" min="20" max="400" value="160">
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">12</span></div>
-      <input type="range" id="s-center" min="1" max="60" value="12">
+      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">35</span></div>
+      <input type="range" id="s-center" min="1" max="100" value="35">
     </div>
     <div class="ctrl-row">
       <div class="ctrl-label"><span>Node Size</span><span class="ctrl-val" id="nsv">10</span></div>
@@ -348,7 +348,7 @@ window.addEventListener('mouseup', () => { panning = false; wrap.classList.remov
 // ── Physics params (live-editable) ────────────────────────────────────────
 let REPULSE    = 500;
 let LINK_DIST  = 160;
-let CENTER_F   = 0.012;
+let CENTER_F   = 0.035;
 let BASE_R     = 10;
 let LABEL_MODE = 1; // 0=off 1=on
 
