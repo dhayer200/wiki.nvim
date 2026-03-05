@@ -699,58 +699,14 @@ function focusNode(id){ openReader(id); }
   f:write(html)
   f:close()
 
-  -- Reload existing browser tab if open, otherwise open fresh
+  -- Open or reload in browser
   local url = "file://" .. out
-  local script = string.format([[
-osascript 2>/dev/null <<'SCPT'
-set reloaded to false
-try
-  tell application "Google Chrome"
-    if it is running then
-      repeat with w in windows
-        set ti to 0
-        repeat with t in tabs of w
-          set ti to ti + 1
-          if URL of t contains "brain.html" then
-            set URL of t to "%s"
-            set active tab index of w to ti
-            activate
-            set reloaded to true
-            exit repeat
-          end if
-        end repeat
-        if reloaded then exit repeat
-      end repeat
-    end if
-  end tell
-end try
-if not reloaded then
-  try
-    tell application "Safari"
-      if it is running then
-        repeat with w in windows
-          repeat with t in tabs of w
-            if URL of t contains "brain.html" then
-              tell t to do JavaScript "location.reload()"
-              set current tab of w to t
-              activate
-              set reloaded to true
-              exit repeat
-            end if
-          end repeat
-          if reloaded then exit repeat
-        end repeat
-      end if
-    end tell
-  end try
-end if
-if not reloaded then
-  do shell script "open " & quoted form of "%s"
-end if
-SCPT
-]], url, out)
-
-  vim.fn.jobstart({ "sh", "-c", script }, { detach = true })
+  local sq = vim.fn.shellescape(out)
+  local chrome_reload = string.format(
+    "osascript -e 'try' -e 'tell app \"Google Chrome\" to set URL of active tab of window 1 to \"%s\"' -e 'on error' -e 'do shell script \"open %s\"' -e 'end try' 2>/dev/null || open %s",
+    url, sq, sq
+  )
+  vim.fn.jobstart({ "sh", "-c", chrome_reload }, { detach = true })
   vim.notify("WikiGraph → " .. out)
 end
 
