@@ -22,24 +22,32 @@ function Wiki.setup(opts)
 
   vim.keymap.set("n", "gf", function()
     require("wiki.gf").gf_create(Wiki)
-  end, { desc = "gf: open/create wikilink/file" })
+  end, { desc = "wiki: open/create wikilink/file" })
 
-  vim.keymap.set("n", "<leader>wb", function()
+  vim.api.nvim_create_user_command("WikiCreate", function()
+    require("wiki.gf").gf_create(Wiki)
+  end, { desc = "Open or create wikilink under cursor" })
+
+  vim.api.nvim_create_user_command("WikiBacklinks", function()
     require("wiki.backlinks").backlinks(Wiki)
-  end, { desc = "wiki: backlinks (quickfix)" })
+  end, { desc = "Show backlinks to current note in quickfix" })
 
-  vim.keymap.set("n", "<leader>ww", function()
+  vim.api.nvim_create_user_command("WikiPanel", function()
     require("wiki.panel").links_panel(Wiki)
-  end, { desc = "wiki: links panel (outgoing + backlinks)" })
+  end, { desc = "Open outgoing links + backlinks panel" })
 
-vim.keymap.set("n", "<leader>hh", function()
-  local path = vim.fn.stdpath("config") .. "/lua/wiki/helper.md"
-  vim.cmd("vsplit " .. vim.fn.fnameescape(path))
-  vim.bo.readonly = true
-  vim.bo.modifiable = false
-  vim.bo.bufhidden = "wipe"
-  vim.bo.filetype = "markdown"
-end, { desc = "wiki: open helper.md" })
+  vim.api.nvim_create_user_command("WikiHelp", function()
+    local path = vim.fn.stdpath("config") .. "/lua/wiki/helper.md"
+    vim.cmd("vsplit " .. vim.fn.fnameescape(path))
+    vim.bo.readonly = true
+    vim.bo.modifiable = false
+    vim.bo.bufhidden = "wipe"
+    vim.bo.filetype = "markdown"
+  end, { desc = "Open wiki helper.md reference" })
+
+  vim.api.nvim_create_user_command("WikiLink", function()
+    require("wiki.gf").gf_create(Wiki)
+  end, { desc = "Follow or create wikilink under cursor" })
 
 end
 
