@@ -647,7 +647,7 @@ function focusNode(id){ openReader(id); }
 </body>
 </html>]]
 
-  local out = vim.fn.expand("~/brain/brain.html")
+  local out = Wiki.root .. "/brain.html"
   local f = io.open(out, "w")
   if not f then
     vim.notify("WikiGraph: could not write " .. out, vim.log.levels.ERROR)
