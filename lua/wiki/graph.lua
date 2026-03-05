@@ -214,24 +214,27 @@ tr.hl td{background:#fef9c3}
 /* ── Reader panel ── */
 #reader{width:0;flex-shrink:0;background:#fff;border-left:1px solid #a2a9b1;overflow:hidden;transition:width .25s ease;display:flex;flex-direction:column}
 #reader.open{width:420px}
-#reader-header{padding:14px 16px;border-bottom:1px solid #eaecf0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-#reader-title{font-size:1.1rem;font-weight:bold;color:#202122}
-#reader-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#54595d;line-height:1;padding:2px 6px}
-#reader-close:hover{color:#202122}
-#reader-body{flex:1;overflow-y:auto;padding:16px}
-#reader-body h1{font-size:1.2rem;margin:0 0 10px}
-#reader-body h2{font-size:1rem;margin:16px 0 8px;border-bottom:1px solid #eaecf0;padding-bottom:4px;text-transform:none;letter-spacing:0;color:#202122}
+#reader.fullscreen{position:fixed;inset:0;width:100vw!important;max-width:860px;margin:0 auto;border:none;box-shadow:0 0 0 100vw rgba(0,0,0,.45);z-index:100;transition:none}
+#reader-header{padding:14px 16px;border-bottom:1px solid #eaecf0;display:flex;align-items:center;gap:8px;flex-shrink:0}
+#reader-title{font-size:1.1rem;font-weight:bold;color:#202122;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#reader-fs,#reader-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:#54595d;line-height:1;padding:2px 6px;border-radius:3px;flex-shrink:0}
+#reader-fs:hover,#reader-close:hover{background:#eaecf0;color:#202122}
+#reader-body{flex:1;overflow-y:auto;padding:20px 24px}
+#reader.fullscreen #reader-body{max-width:680px;margin:0 auto;width:100%}
+#reader-body h1{font-size:1.3rem;margin:0 0 12px}
+#reader-body h2{font-size:1.05rem;margin:18px 0 8px;border-bottom:1px solid #eaecf0;padding-bottom:4px;text-transform:none;letter-spacing:0;color:#202122}
 #reader-body h3{font-size:.95rem;margin:14px 0 6px}
-#reader-body p{margin:0 0 10px;line-height:1.6;font-size:.9rem}
-#reader-body ul,#reader-body ol{margin:0 0 10px 20px}
-#reader-body li{line-height:1.6;font-size:.9rem;margin-bottom:3px}
-#reader-body .wikilink{color:#3366cc;cursor:pointer}
+#reader-body p{margin:0 0 12px;line-height:1.7;font-size:.93rem}
+#reader-body ul,#reader-body ol{margin:0 0 12px 22px}
+#reader-body li{line-height:1.7;font-size:.93rem;margin-bottom:4px}
+#reader-body .wikilink{color:#3366cc;cursor:pointer;text-decoration:none}
 #reader-body .wikilink:hover{text-decoration:underline}
 #reader-body .math-inline{font-style:italic;color:#333;background:#f8f8f8;padding:1px 4px;border-radius:2px;font-family:serif}
 #reader-body .math-block{display:block;background:#f8f8f8;border-left:3px solid #a2a9b1;padding:8px 12px;margin:10px 0;font-style:italic;font-family:serif;overflow-x:auto;white-space:pre}
 #reader-body blockquote{border-left:3px solid #a2a9b1;margin:10px 0;padding:4px 12px;color:#54595d;font-style:italic}
 #reader-body hr{border:none;border-top:1px solid #eaecf0;margin:14px 0}
 #reader-links{padding:12px 16px;border-top:1px solid #eaecf0;flex-shrink:0;font-size:.82rem}
+#reader.fullscreen #reader-links{max-width:680px;margin:0 auto;width:100%}
 #reader-links h3{font-size:.75rem;font-weight:bold;text-transform:uppercase;letter-spacing:.07em;color:#54595d;margin-bottom:6px}
 #reader-links .link-row{margin-bottom:10px}
 #reader-links .rtag{display:inline-block;background:#eaecf0;border-radius:2px;padding:2px 8px;margin:2px;font-size:.8rem;cursor:pointer;color:#3366cc}
@@ -292,7 +295,8 @@ tr.hl td{background:#fef9c3}
 <div id="reader">
   <div id="reader-header">
     <span id="reader-title"></span>
-    <button id="reader-close" onclick="closeReader()">&#x2715;</button>
+    <button id="reader-fs" onclick="toggleFullscreen()" title="Fullscreen">&#x26F6;</button>
+    <button id="reader-close" onclick="closeReader()" title="Close">&#x2715;</button>
   </div>
   <div id="reader-body"></div>
   <div id="reader-links">
@@ -631,13 +635,28 @@ function panToNode(n) {
   requestAnimationFrame(step);
 }
 
+let readerFullscreen = false;
+
+function toggleFullscreen() {
+  const r = document.getElementById('reader');
+  readerFullscreen = !readerFullscreen;
+  r.classList.toggle('fullscreen', readerFullscreen);
+  document.getElementById('reader-fs').textContent = readerFullscreen ? '\u2715' : '\u26F6';
+  document.getElementById('reader-fs').title = readerFullscreen ? 'Exit fullscreen' : 'Fullscreen';
+  // hide close button in fullscreen (the fs button doubles as exit)
+  document.getElementById('reader-close').style.display = readerFullscreen ? 'none' : '';
+}
+
 function openReader(id) {
   const n = nodeById[id];
   if (!n) return;
-  panToNode(n);
+  if (!readerFullscreen) panToNode(n);
   document.getElementById('reader-title').textContent = n.id;
-  document.getElementById('reader-body').innerHTML = renderContent(n.content, n.ext);
-  document.getElementById('reader').classList.add('open');
+  const body = document.getElementById('reader-body');
+  body.innerHTML = renderContent(n.content, n.ext);
+  body.scrollTop = 0;
+  const r = document.getElementById('reader');
+  r.classList.add('open');
   const rawOut = rawEdges.filter(e => e.source===id).map(e => e.target);
   const rawIn  = backlinks[id] || [];
   document.getElementById('reader-out').innerHTML = rawOut.length
@@ -649,15 +668,21 @@ function openReader(id) {
   document.querySelectorAll('.node.focused').forEach(el=>el.classList.remove('focused'));
   const el = document.getElementById('n-'+id);
   if (el) el.classList.add('focused');
-  const row = document.getElementById('row-'+id);
-  if (row){
-    document.querySelectorAll('tr.hl').forEach(r=>r.classList.remove('hl'));
-    row.classList.add('hl');
-    row.scrollIntoView({behavior:'smooth',block:'nearest'});
+  if (!readerFullscreen) {
+    const row = document.getElementById('row-'+id);
+    if (row){
+      document.querySelectorAll('tr.hl').forEach(r=>r.classList.remove('hl'));
+      row.classList.add('hl');
+      row.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
   }
 }
 function closeReader(){
+  if (readerFullscreen) { readerFullscreen = false; document.getElementById('reader').classList.remove('fullscreen'); }
   document.getElementById('reader').classList.remove('open');
+  document.getElementById('reader-fs').textContent = '\u26F6';
+  document.getElementById('reader-fs').title = 'Fullscreen';
+  document.getElementById('reader-close').style.display = '';
   document.querySelectorAll('.node.focused').forEach(el=>el.classList.remove('focused'));
 }
 function focusNode(id){ openReader(id); }
