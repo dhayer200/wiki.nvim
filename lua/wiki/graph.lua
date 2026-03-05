@@ -605,7 +605,7 @@ function renderContent(raw, ext) {
 function inline(s, ext) {
   s = s.replace(/\[\[([^\]|]+)(?:\|([^\x5D]+))?\]\]/g, (_,target,alias) => {
     const id = target.trim().replace(/\.[a-z]+$/,'');
-    return `<span class="wikilink" onclick="openReader(${JSON.stringify(id)})">${esc((alias||id).trim())}</span>`;
+    return `<span class="wikilink" onclick='openReader(${JSON.stringify(id)})'>${esc((alias||id).trim())}</span>`;
   });
   s = s.replace(/\$([^$\n]+)\$/g, (_,m) => `<span class="math-inline">${esc(m)}</span>`);
   s = s.replace(/\*\*\*(.+?)\*\*\*/g, (_,m) => `<strong><em>${esc(m)}</em></strong>`);
@@ -660,10 +660,10 @@ function openReader(id) {
   const rawOut = rawEdges.filter(e => e.source===id).map(e => e.target);
   const rawIn  = backlinks[id] || [];
   document.getElementById('reader-out').innerHTML = rawOut.length
-    ? rawOut.map(t=>`<span class="rtag" onclick="openReader(${JSON.stringify(t)})">${esc(t)}</span>`).join('')
+    ? rawOut.map(t=>`<span class="rtag" onclick='openReader(${JSON.stringify(t)})'>${esc(t)}</span>`).join('')
     : '<span class="rnone">none</span>';
   document.getElementById('reader-in').innerHTML = rawIn.length
-    ? rawIn.map(s=>`<span class="rtag" onclick="openReader(${JSON.stringify(s)})">${esc(s)}</span>`).join('')
+    ? rawIn.map(s=>`<span class="rtag" onclick='openReader(${JSON.stringify(s)})'>${esc(s)}</span>`).join('')
     : '<span class="rnone">none</span>';
   document.querySelectorAll('.node.focused').forEach(el=>el.classList.remove('focused'));
   const el = document.getElementById('n-'+id);
@@ -698,7 +698,59 @@ function focusNode(id){ openReader(id); }
   end
   f:write(html)
   f:close()
-  vim.fn.jobstart({ "open", out }, { detach = true })
+
+  -- Reload existing browser tab if open, otherwise open fresh
+  local url = "file://" .. out
+  local script = string.format([[
+osascript 2>/dev/null <<'SCPT'
+set reloaded to false
+try
+  tell application "Google Chrome"
+    if it is running then
+      repeat with w in windows
+        set ti to 0
+        repeat with t in tabs of w
+          set ti to ti + 1
+          if URL of t contains "brain.html" then
+            set URL of t to "%s"
+            set active tab index of w to ti
+            activate
+            set reloaded to true
+            exit repeat
+          end if
+        end repeat
+        if reloaded then exit repeat
+      end repeat
+    end if
+  end tell
+end try
+if not reloaded then
+  try
+    tell application "Safari"
+      if it is running then
+        repeat with w in windows
+          repeat with t in tabs of w
+            if URL of t contains "brain.html" then
+              tell t to do JavaScript "location.reload()"
+              set current tab of w to t
+              activate
+              set reloaded to true
+              exit repeat
+            end if
+          end repeat
+          if reloaded then exit repeat
+        end repeat
+      end if
+    end tell
+  end try
+end if
+if not reloaded then
+  do shell script "open " & quoted form of "%s"
+end if
+SCPT
+]], url, out)
+
+  vim.fn.jobstart({ "sh", "-c", script }, { detach = true })
   vim.notify("WikiGraph → " .. out)
 end
 
