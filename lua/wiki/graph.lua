@@ -599,7 +599,7 @@ function renderContent(raw, ext) {
 }
 
 function inline(s, ext) {
-  s = s.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_,target,alias) => {
+  s = s.replace(/\[\[([^\]|]+)(?:\|([^\x5D]+))?\]\]/g, (_,target,alias) => {
     const id = target.trim().replace(/\.[a-z]+$/,'');
     return `<span class="wikilink" onclick="openReader(${JSON.stringify(id)})">${esc((alias||id).trim())}</span>`;
   });
