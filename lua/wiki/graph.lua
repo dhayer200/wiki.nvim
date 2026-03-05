@@ -214,13 +214,13 @@ tr.hl td{background:#fef9c3}
 /* ── Reader panel ── */
 #reader{width:0;flex-shrink:0;background:#fff;border-left:1px solid #a2a9b1;overflow:hidden;transition:width .25s ease;display:flex;flex-direction:column}
 #reader.open{width:420px}
-#reader.fullscreen{position:fixed;inset:0;width:100vw!important;max-width:860px;margin:0 auto;border:none;box-shadow:0 0 0 100vw rgba(0,0,0,.45);z-index:100;transition:none}
+#reader.fullscreen{position:fixed;inset:0;width:100vw!important;max-width:100vw;border:none;z-index:100;transition:none}
 #reader-header{padding:14px 16px;border-bottom:1px solid #eaecf0;display:flex;align-items:center;gap:8px;flex-shrink:0}
 #reader-title{font-size:1.1rem;font-weight:bold;color:#202122;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #reader-fs,#reader-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:#54595d;line-height:1;padding:2px 6px;border-radius:3px;flex-shrink:0}
 #reader-fs:hover,#reader-close:hover{background:#eaecf0;color:#202122}
 #reader-body{flex:1;overflow-y:auto;padding:20px 24px}
-#reader.fullscreen #reader-body{max-width:680px;margin:0 auto;width:100%}
+#reader.fullscreen #reader-body{max-width:none;margin:0;width:100%}
 #reader-body h1{font-size:1.3rem;margin:0 0 12px}
 #reader-body h2{font-size:1.05rem;margin:18px 0 8px;border-bottom:1px solid #eaecf0;padding-bottom:4px;text-transform:none;letter-spacing:0;color:#202122}
 #reader-body h3{font-size:.95rem;margin:14px 0 6px}
@@ -234,7 +234,7 @@ tr.hl td{background:#fef9c3}
 #reader-body blockquote{border-left:3px solid #a2a9b1;margin:10px 0;padding:4px 12px;color:#54595d;font-style:italic}
 #reader-body hr{border:none;border-top:1px solid #eaecf0;margin:14px 0}
 #reader-links{padding:12px 16px;border-top:1px solid #eaecf0;flex-shrink:0;font-size:.82rem}
-#reader.fullscreen #reader-links{max-width:680px;margin:0 auto;width:100%}
+#reader.fullscreen #reader-links{max-width:none;margin:0;width:100%}
 #reader-links h3{font-size:.75rem;font-weight:bold;text-transform:uppercase;letter-spacing:.07em;color:#54595d;margin-bottom:6px}
 #reader-links .link-row{margin-bottom:10px}
 #reader-links .rtag{display:inline-block;background:#eaecf0;border-radius:2px;padding:2px 8px;margin:2px;font-size:.8rem;cursor:pointer;color:#3366cc}
