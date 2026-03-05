@@ -53,6 +53,16 @@ function Wiki.setup(opts)
     require("wiki.graph").generate(Wiki)
   end, { desc = "Generate and open wiki graph in browser" })
 
+  vim.api.nvim_create_user_command("WikiDaily", function()
+    local date = os.date("%Y-%m-%d")
+    local path = Wiki.root .. "/" .. date .. ".md"
+    vim.fn.mkdir(Wiki.root, "p")
+    if vim.fn.filereadable(path) == 0 then
+      vim.fn.writefile({ "# " .. date, "", "" }, path)
+    end
+    vim.cmd("edit " .. vim.fn.fnameescape(path))
+  end, { desc = "Open today's daily note" })
+
 end
 
 return Wiki
