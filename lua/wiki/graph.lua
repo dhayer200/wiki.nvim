@@ -10,8 +10,11 @@ local function server_script()
 end
 
 function M.generate(Wiki)
-  if vim.fn.executable("node") == 0 then
-    vim.notify("WikiGraph: node not found in PATH", vim.log.levels.ERROR)
+  local node_bin = vim.fn.executable("node") == 1 and "node"
+    or vim.fn.executable("nodejs") == 1 and "nodejs"
+    or nil
+  if not node_bin then
+    vim.notify("WikiGraph: node/nodejs not found in PATH", vim.log.levels.ERROR)
     return
   end
 
@@ -30,7 +33,7 @@ function M.generate(Wiki)
   local root = Wiki.root
 
   _job_id = vim.fn.jobstart(
-    { "node", script, root, tostring(PORT) },
+    { node_bin, script, root, tostring(PORT) },
     {
       on_stdout = function(_, data)
         for _, line in ipairs(data) do
