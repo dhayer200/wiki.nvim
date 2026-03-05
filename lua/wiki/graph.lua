@@ -163,18 +163,44 @@ h2{font-size:.8rem;font-weight:bold;border-bottom:1px solid #a2a9b1;padding-bott
 .card-title{font-weight:bold;font-size:.9rem;margin-bottom:5px;color:#3366cc}
 .card-blurb{font-size:.8rem;color:#54595d;line-height:1.4}
 
-#graph-wrap{background:#fff;border:1px solid #a2a9b1;border-radius:2px;margin-bottom:32px;position:relative;height:480px;overflow:hidden;cursor:grab}
+/* ── Graph ── */
+#graph-wrap{background:#1a1b1e;border-radius:4px;margin-bottom:32px;position:relative;height:520px;overflow:hidden;cursor:grab}
 #graph-wrap.panning{cursor:grabbing}
 #graph-wrap svg{width:100%;height:100%;display:block}
-.link{stroke:#c8ccd1;stroke-width:1px}
-.node circle{stroke:#a2a9b1;stroke-width:1.5px;fill:#eaf3fb;cursor:pointer;transition:fill .15s}
-.node:hover circle,.node.focused circle{fill:#3366cc}
-.node text{font-size:10px;fill:#202122;pointer-events:none;font-family:sans-serif}
 
-#snap{position:absolute;top:10px;right:10px;background:#fff;border:1px solid #a2a9b1;border-radius:2px;padding:10px 13px;max-width:200px;font-size:.82rem;display:none;box-shadow:0 2px 6px rgba(0,0,0,.1);pointer-events:none}
-#snap .t{font-weight:bold;color:#3366cc;margin-bottom:4px}
-#snap .b{color:#54595d;line-height:1.4}
+.link{stroke:#3a3d45;stroke-width:1px;transition:stroke .2s}
+.link.highlighted{stroke:#7b9fd4;stroke-width:2px}
 
+.node circle{cursor:pointer;transition:r .2s}
+.node text{
+  font-size:11px;
+  fill:#d0d3db;
+  pointer-events:none;
+  font-family:sans-serif;
+  paint-order:stroke fill;
+  stroke:#1a1b1e;
+  stroke-width:3px;
+  stroke-linejoin:round;
+}
+
+/* snap tooltip */
+#snap{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(30,32,36,.92);border:1px solid #3a3d45;border-radius:4px;padding:8px 13px;max-width:260px;font-size:.82rem;display:none;pointer-events:none;text-align:center}
+#snap .t{font-weight:bold;color:#7b9fd4;margin-bottom:3px;font-family:sans-serif}
+#snap .b{color:#9da3b0;line-height:1.4;font-family:sans-serif}
+
+/* ── Controls panel ── */
+#controls{position:absolute;bottom:12px;right:12px;background:rgba(26,27,30,.92);border:1px solid #3a3d45;border-radius:6px;padding:12px 14px;width:210px;font-family:sans-serif}
+#controls-toggle{position:absolute;bottom:12px;right:12px;background:rgba(26,27,30,.85);border:1px solid #3a3d45;border-radius:4px;color:#9da3b0;font-size:.78rem;padding:5px 10px;cursor:pointer;display:none;font-family:sans-serif}
+#controls-toggle:hover{background:rgba(50,52,60,.95)}
+.ctrl-title{font-size:.72rem;font-weight:bold;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.ctrl-title button{background:none;border:none;color:#6b7280;cursor:pointer;font-size:.85rem;line-height:1;padding:0 2px}
+.ctrl-title button:hover{color:#d0d3db}
+.ctrl-row{margin-bottom:9px}
+.ctrl-label{display:flex;justify-content:space-between;font-size:.75rem;color:#9da3b0;margin-bottom:3px}
+.ctrl-val{color:#7b9fd4;font-weight:bold}
+input[type=range]{width:100%;height:3px;accent-color:#7b9fd4;cursor:pointer}
+
+/* ── Table ── */
 table{width:100%;border-collapse:collapse;background:#fff;font-size:.86rem}
 th{text-align:left;padding:7px 12px;background:#eaecf0;border:1px solid #a2a9b1;font-weight:bold}
 td{padding:6px 12px;border-bottom:1px solid #eaecf0;vertical-align:top}
@@ -185,7 +211,7 @@ tr.hl td{background:#fef9c3}
 .tag:hover{background:#c8ccd1}
 .dim{color:#a2a9b1}
 
-/* ── Reader panel ─────────────────────────────────────────────────────────── */
+/* ── Reader panel ── */
 #reader{width:0;flex-shrink:0;background:#fff;border-left:1px solid #a2a9b1;overflow:hidden;transition:width .25s ease;display:flex;flex-direction:column}
 #reader.open{width:420px}
 #reader-header{padding:14px 16px;border-bottom:1px solid #eaecf0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -193,29 +219,24 @@ tr.hl td{background:#fef9c3}
 #reader-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#54595d;line-height:1;padding:2px 6px}
 #reader-close:hover{color:#202122}
 #reader-body{flex:1;overflow-y:auto;padding:16px}
-
-/* rendered note content */
 #reader-body h1{font-size:1.2rem;margin:0 0 10px}
 #reader-body h2{font-size:1rem;margin:16px 0 8px;border-bottom:1px solid #eaecf0;padding-bottom:4px;text-transform:none;letter-spacing:0;color:#202122}
 #reader-body h3{font-size:.95rem;margin:14px 0 6px}
 #reader-body p{margin:0 0 10px;line-height:1.6;font-size:.9rem}
 #reader-body ul,#reader-body ol{margin:0 0 10px 20px}
 #reader-body li{line-height:1.6;font-size:.9rem;margin-bottom:3px}
-#reader-body .wikilink{color:#3366cc;cursor:pointer;text-decoration:none}
+#reader-body .wikilink{color:#3366cc;cursor:pointer}
 #reader-body .wikilink:hover{text-decoration:underline}
 #reader-body .math-inline{font-style:italic;color:#333;background:#f8f8f8;padding:1px 4px;border-radius:2px;font-family:serif}
 #reader-body .math-block{display:block;background:#f8f8f8;border-left:3px solid #a2a9b1;padding:8px 12px;margin:10px 0;font-style:italic;font-family:serif;overflow-x:auto;white-space:pre}
 #reader-body blockquote{border-left:3px solid #a2a9b1;margin:10px 0;padding:4px 12px;color:#54595d;font-style:italic}
 #reader-body hr{border:none;border-top:1px solid #eaecf0;margin:14px 0}
-#reader-body strong{font-weight:bold}
-#reader-body em{font-style:italic}
-
 #reader-links{padding:12px 16px;border-top:1px solid #eaecf0;flex-shrink:0;font-size:.82rem}
 #reader-links h3{font-size:.75rem;font-weight:bold;text-transform:uppercase;letter-spacing:.07em;color:#54595d;margin-bottom:6px}
 #reader-links .link-row{margin-bottom:10px}
 #reader-links .rtag{display:inline-block;background:#eaecf0;border-radius:2px;padding:2px 8px;margin:2px;font-size:.8rem;cursor:pointer;color:#3366cc}
 #reader-links .rtag:hover{background:#c8ccd1}
-.none{color:#a2a9b1;font-style:italic}
+.rnone{color:#a2a9b1;font-style:italic}
 </style>
 </head>
 <body>
@@ -224,22 +245,50 @@ tr.hl td{background:#fef9c3}
   <span>]] .. #nodes .. [[ notes &middot; ]] .. #edges .. [[ connections</span>
 </header>
 <div class="main">
-<div class="left">
-<div class="section">
-  <h2>Featured</h2>
-  <div class="cards">]] .. table.concat(cards, "\n") .. [[</div>
-  <h2>Graph</h2>
-  <div id="graph-wrap">
-    <svg id="svg"><g id="g"><g id="links-g"></g><g id="nodes-g"></g></g></svg>
-    <div id="snap"><div class="t" id="snap-t"></div><div class="b" id="snap-b"></div></div>
+<div class="left"><div class="section">
+
+<h2>Featured</h2>
+<div class="cards">]] .. table.concat(cards, "\n") .. [[</div>
+
+<h2>Graph</h2>
+<div id="graph-wrap">
+  <svg id="svg"><g id="g"><g id="links-g"></g><g id="nodes-g"></g></g></svg>
+  <div id="snap"><div class="t" id="snap-t"></div><div class="b" id="snap-b"></div></div>
+  <div id="controls">
+    <div class="ctrl-title">
+      <span>Graph Settings</span>
+      <button onclick="document.getElementById('controls').style.display='none';document.getElementById('controls-toggle').style.display='block'">&#x2715;</button>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label"><span>Repulsion</span><span class="ctrl-val" id="rv">280</span></div>
+      <input type="range" id="s-repulse" min="50" max="700" value="280">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label"><span>Link Distance</span><span class="ctrl-val" id="ldv">120</span></div>
+      <input type="range" id="s-dist" min="20" max="300" value="120">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">15</span></div>
+      <input type="range" id="s-center" min="1" max="60" value="15">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label"><span>Node Size</span><span class="ctrl-val" id="nsv">10</span></div>
+      <input type="range" id="s-size" min="3" max="24" value="10">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label"><span>Labels</span><span class="ctrl-val" id="lv">Auto</span></div>
+      <input type="range" id="s-labels" min="0" max="2" step="1" value="1">
+    </div>
   </div>
-  <h2>All Notes</h2>
-  <table><thead><tr><th>Note</th><th>Links to</th></tr></thead>
-  <tbody>]] .. table.concat(rows, "\n") .. [[</tbody></table>
-</div>
+  <button id="controls-toggle" onclick="document.getElementById('controls').style.display='block';this.style.display='none'">&#x2699; Settings</button>
 </div>
 
-<!-- reader panel -->
+<h2>All Notes</h2>
+<table><thead><tr><th>Note</th><th>Links to</th></tr></thead>
+<tbody>]] .. table.concat(rows, "\n") .. [[</tbody></table>
+
+</div></div>
+
 <div id="reader">
   <div id="reader-header">
     <span id="reader-title"></span>
@@ -247,14 +296,8 @@ tr.hl td{background:#fef9c3}
   </div>
   <div id="reader-body"></div>
   <div id="reader-links">
-    <div class="link-row">
-      <h3>Wikilinks</h3>
-      <div id="reader-out"></div>
-    </div>
-    <div class="link-row">
-      <h3>Backlinks</h3>
-      <div id="reader-in"></div>
-    </div>
+    <div class="link-row"><h3>Wikilinks</h3><div id="reader-out"></div></div>
+    <div class="link-row"><h3>Backlinks</h3><div id="reader-in"></div></div>
   </div>
 </div>
 </div>
@@ -263,33 +306,35 @@ tr.hl td{background:#fef9c3}
 const rawNodes = []] .. table.concat(nodes_json, ",") .. [[];
 const rawEdges = []] .. table.concat(edges_json, ",") .. [[];
 
-// ── Graph setup ────────────────────────────────────────────────────────────
+// ── SVG / zoom setup ───────────────────────────────────────────────────────
 const wrap   = document.getElementById('graph-wrap');
 const svg    = document.getElementById('svg');
-const g      = document.getElementById('g');
+const gEl    = document.getElementById('g');
 const linksG = document.getElementById('links-g');
 const nodesG = document.getElementById('nodes-g');
 const NS = 'http://www.w3.org/2000/svg';
 const W = svg.clientWidth, H = svg.clientHeight;
 
 let tx = 0, ty = 0, sc = 1;
-function applyTransform() { g.setAttribute('transform', `translate(${tx},${ty}) scale(${sc})`); }
+function applyTransform() {
+  gEl.setAttribute('transform', `translate(${tx},${ty}) scale(${sc})`);
+  updateLabelVisibility();
+}
 
 svg.addEventListener('wheel', e => {
   e.preventDefault();
   const f = e.deltaY > 0 ? 0.88 : 1.14;
   const r = svg.getBoundingClientRect();
-  const mx = e.clientX - r.left, my = e.clientY - r.top;
-  tx = mx - (mx - tx) * f;
-  ty = my - (my - ty) * f;
-  sc = Math.min(6, Math.max(0.15, sc * f));
+  tx = (e.clientX - r.left) - ((e.clientX - r.left) - tx) * f;
+  ty = (e.clientY - r.top)  - ((e.clientY - r.top)  - ty) * f;
+  sc = Math.min(8, Math.max(0.1, sc * f));
   applyTransform();
 }, { passive: false });
 
 let panning = false, panStart = {};
 svg.addEventListener('mousedown', e => {
-  if (e.target === svg || e.target === g || e.target.tagName === 'line' ||
-      (e.target.tagName === 'text')) {
+  if (e.target === svg || e.target === gEl ||
+      e.target.tagName === 'line' || e.target.tagName === 'text') {
     panning = true; wrap.classList.add('panning');
     panStart = { x: e.clientX - tx, y: e.clientY - ty };
   }
@@ -300,9 +345,56 @@ window.addEventListener('mousemove', e => {
 });
 window.addEventListener('mouseup', () => { panning = false; wrap.classList.remove('panning'); });
 
+// ── Physics params (live-editable) ────────────────────────────────────────
+let REPULSE    = -280;
+let LINK_DIST  = 120;
+let CENTER_F   = 0.015;
+let BASE_R     = 10;
+let LABEL_MODE = 1; // 0=off 1=auto 2=always
+
+function wireSlider(id, valId, onInput) {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    onInput(parseFloat(el.value));
+    document.getElementById(valId).textContent =
+      id === 's-labels' ? ['Off','Auto','Always'][parseInt(el.value)] : el.value;
+    reheat();
+  });
+}
+wireSlider('s-repulse', 'rv',     v => { REPULSE   = -v; });
+wireSlider('s-dist',    'ldv',    v => { LINK_DIST  = v; });
+wireSlider('s-center',  'cfv',    v => { CENTER_F   = v / 1000; });
+wireSlider('s-size',    'nsv',    v => { BASE_R = v; updateNodeSizes(); });
+wireSlider('s-labels',  'lv',     v => { LABEL_MODE = parseInt(v); updateLabelVisibility(); });
+
+function updateNodeSizes() {
+  nodes.forEach(n => {
+    const r = BASE_R + Math.min((lc[n.id]||0) * 1.5, BASE_R);
+    n._r = r;
+    const el = document.getElementById('n-' + n.id);
+    if (!el) return;
+    el.querySelector('circle').setAttribute('r', r);
+    el.querySelector('text').setAttribute('x', r + 3);
+  });
+}
+
+function updateLabelVisibility() {
+  nodeEls.forEach((el, i) => {
+    const text = el.querySelector('text');
+    if (!text) return;
+    if (LABEL_MODE === 0) { text.style.opacity = 0; return; }
+    if (LABEL_MODE === 2) { text.style.opacity = 1; return; }
+    // auto: fade in with zoom
+    const t = Math.max(0, Math.min(1, (sc - 0.5) / 0.5));
+    text.style.opacity = t;
+  });
+}
+
 // ── Node / link data ───────────────────────────────────────────────────────
 const nodes = rawNodes.map(n => ({
-  ...n, x: W/2 + (Math.random()-.5)*300, y: H/2 + (Math.random()-.5)*300,
+  ...n,
+  x: W/2 + (Math.random()-.5)*260,
+  y: H/2 + (Math.random()-.5)*260,
   vx: 0, vy: 0, fx: null, fy: null
 }));
 const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
@@ -316,12 +408,20 @@ links.forEach(l => {
   lc[l.target.id] = (lc[l.target.id]||0) + 1;
 });
 
-// backlinks map
 const backlinks = {};
 links.forEach(l => {
   if (!backlinks[l.target.id]) backlinks[l.target.id] = [];
   backlinks[l.target.id].push(l.source.id);
 });
+
+// node colour by connection count
+function nodeColor(id) {
+  const n = lc[id] || 0;
+  if (n === 0) return '#4a4d58';
+  if (n <= 2)  return '#5a7fa8';
+  if (n <= 5)  return '#7b9fd4';
+  return '#a8c4e8';
+}
 
 // ── SVG elements ───────────────────────────────────────────────────────────
 const lineEls = links.map(() => {
@@ -335,26 +435,49 @@ const nodeEls = nodes.map(n => {
   const grp = document.createElementNS(NS, 'g');
   grp.setAttribute('class', 'node');
   grp.id = 'n-' + n.id;
-  const r = 7 + Math.min((lc[n.id]||0) * 1.6, 11);
+
+  const r = BASE_R + Math.min((lc[n.id]||0) * 1.5, BASE_R);
+  n._r = r;
+
   const circle = document.createElementNS(NS, 'circle');
   circle.setAttribute('r', r);
+  circle.setAttribute('fill', nodeColor(n.id));
+  circle.setAttribute('stroke', '#2a2d35');
+  circle.setAttribute('stroke-width', '1.5');
+
   const text = document.createElementNS(NS, 'text');
   text.setAttribute('dy', '0.35em');
   text.setAttribute('x', r + 3);
   text.textContent = n.id;
-  grp.appendChild(circle); grp.appendChild(text);
+  text.style.opacity = 0;
+
+  grp.appendChild(circle);
+  grp.appendChild(text);
   nodesG.appendChild(grp);
 
+  // hover: snap tooltip + highlight edges
   grp.addEventListener('mouseenter', () => {
     document.getElementById('snap-t').textContent = n.id;
-    document.getElementById('snap-b').textContent = n.blurb || 'No description yet.';
+    document.getElementById('snap-b').textContent = n.blurb || 'No description.';
     document.getElementById('snap').style.display = 'block';
+    // highlight connected edges
+    lineEls.forEach((el, i) => {
+      const l = links[i];
+      const connected = l.source.id === n.id || l.target.id === n.id;
+      el.classList.toggle('highlighted', connected);
+    });
+    // show label regardless of zoom
+    text.style.opacity = 1;
   });
   grp.addEventListener('mouseleave', () => {
     document.getElementById('snap').style.display = 'none';
+    lineEls.forEach(el => el.classList.remove('highlighted'));
+    updateLabelVisibility();
   });
+
   grp.addEventListener('click', e => { e.stopPropagation(); openReader(n.id); });
 
+  // drag
   grp.addEventListener('mousedown', e => {
     e.stopPropagation();
     const rect = svg.getBoundingClientRect();
@@ -371,23 +494,27 @@ const nodeEls = nodes.map(n => {
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
   });
+
   return grp;
 });
 
 // ── Force simulation ───────────────────────────────────────────────────────
 let alpha = 1;
 const ALPHA_DECAY = 0.02, ALPHA_MIN = 0.001, VEL_DECAY = 0.42;
-const LINK_DIST = 120, REPULSE = -280, COLLIDE_R = 28;
 
 function simTick() {
   if (alpha < ALPHA_MIN) return;
   alpha *= (1 - ALPHA_DECAY);
 
+  const collideR = BASE_R * 2.8;
+
+  // center gravity
   nodes.forEach(n => {
-    if (n.fx == null) n.vx += (W/2 - n.x) * 0.015 * alpha;
-    if (n.fy == null) n.vy += (H/2 - n.y) * 0.015 * alpha;
+    if (n.fx == null) n.vx += (W/2 - n.x) * CENTER_F * alpha;
+    if (n.fy == null) n.vy += (H/2 - n.y) * CENTER_F * alpha;
   });
 
+  // repulsion
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i+1; j < nodes.length; j++) {
       const a = nodes[i], b = nodes[j];
@@ -398,6 +525,7 @@ function simTick() {
     }
   }
 
+  // spring
   links.forEach(l => {
     const dx = l.target.x-l.source.x, dy = l.target.y-l.source.y;
     const d = Math.sqrt(dx*dx+dy*dy)||1;
@@ -406,18 +534,20 @@ function simTick() {
     if (l.target.fx==null){l.target.vx-=f*dx; l.target.vy-=f*dy;}
   });
 
+  // collision
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i+1; j < nodes.length; j++) {
       const a = nodes[i], b = nodes[j];
       const dx = b.x-a.x, dy = b.y-a.y, d = Math.sqrt(dx*dx+dy*dy)||1;
-      if (d < COLLIDE_R) {
-        const ov = (COLLIDE_R-d)/d*0.5;
+      if (d < collideR) {
+        const ov = (collideR-d)/d*0.5;
         if (a.fx==null){a.vx-=dx*ov; a.vy-=dy*ov;}
         if (b.fx==null){b.vx+=dx*ov; b.vy+=dy*ov;}
       }
     }
   }
 
+  // integrate
   nodes.forEach(n => {
     if (n.fx!=null){n.x=n.fx;n.vx=0;}else{n.vx*=(1-VEL_DECAY);n.x+=n.vx;}
     if (n.fy!=null){n.y=n.fy;n.vy=0;}else{n.vy*=(1-VEL_DECAY);n.y+=n.vy;}
@@ -435,60 +565,33 @@ requestAnimationFrame(simTick);
 
 // ── Note renderer ──────────────────────────────────────────────────────────
 function renderContent(raw, ext) {
-  // strip display math blocks first, replace with placeholder
   const blocks = [];
   let text = raw.replace(/\$\$[\s\S]*?\$\$/g, m => {
-    blocks.push(m.slice(2, -2).trim());
-    return '\x00BLOCK' + (blocks.length-1) + '\x00';
+    blocks.push(m.slice(2,-2).trim()); return '\x00BLOCK'+(blocks.length-1)+'\x00';
   });
-  // typst display math: $ ... $ on its own line (has spaces around content)
-  if (ext === 'typ') {
-    text = text.replace(/^\$\n([\s\S]*?)\n\$$/gm, (_, inner) => {
-      blocks.push(inner.trim());
-      return '\x00BLOCK' + (blocks.length-1) + '\x00';
+  if (ext==='typ') {
+    text = text.replace(/^\$\n([\s\S]*?)\n\$$/gm, (_,inner) => {
+      blocks.push(inner.trim()); return '\x00BLOCK'+(blocks.length-1)+'\x00';
     });
-    // typst #import, #set, #show — skip
-    text = text.replace(/^#(import|set|show|let)[^\n]*/gm, '');
+    text = text.replace(/^#(import|set|show|let)[^\n]*/gm,'');
   }
-
-  const lines = text.split('\n');
-  const out = [];
+  const lines = text.split('\n'), out = [];
   let inList = false;
-
-  for (let i = 0; i < lines.length; i++) {
-    let l = lines[i];
-
-    // headings
-    if (/^=== /.test(l))      { if(inList){out.push('</ul>');inList=false;} out.push('<h3>'+inline(l.slice(4),ext)+'</h3>'); continue; }
-    if (/^== /.test(l))       { if(inList){out.push('</ul>');inList=false;} out.push('<h2>'+inline(l.slice(3),ext)+'</h2>'); continue; }
-    if (/^= /.test(l))        { if(inList){out.push('</ul>');inList=false;} out.push('<h1>'+inline(l.slice(2),ext)+'</h1>'); continue; }
-    if (/^### /.test(l))      { if(inList){out.push('</ul>');inList=false;} out.push('<h3>'+inline(l.slice(4),ext)+'</h3>'); continue; }
-    if (/^## /.test(l))       { if(inList){out.push('</ul>');inList=false;} out.push('<h2>'+inline(l.slice(3),ext)+'</h2>'); continue; }
-    if (/^# /.test(l))        { if(inList){out.push('</ul>');inList=false;} out.push('<h1>'+inline(l.slice(2),ext)+'</h1>'); continue; }
-    if (/^---+$/.test(l.trim())) { if(inList){out.push('</ul>');inList=false;} out.push('<hr>'); continue; }
-
-    // block math placeholder
-    if (/^\x00BLOCK\d+\x00$/.test(l.trim())) {
+  for (const l of lines) {
+    if (/^=== /.test(l))     {if(inList){out.push('</ul>');inList=false;}out.push('<h3>'+inline(l.slice(4),ext)+'</h3>');continue;}
+    if (/^== /.test(l))      {if(inList){out.push('</ul>');inList=false;}out.push('<h2>'+inline(l.slice(3),ext)+'</h2>');continue;}
+    if (/^= /.test(l))       {if(inList){out.push('</ul>');inList=false;}out.push('<h1>'+inline(l.slice(2),ext)+'</h1>');continue;}
+    if (/^### /.test(l))     {if(inList){out.push('</ul>');inList=false;}out.push('<h3>'+inline(l.slice(4),ext)+'</h3>');continue;}
+    if (/^## /.test(l))      {if(inList){out.push('</ul>');inList=false;}out.push('<h2>'+inline(l.slice(3),ext)+'</h2>');continue;}
+    if (/^# /.test(l))       {if(inList){out.push('</ul>');inList=false;}out.push('<h1>'+inline(l.slice(2),ext)+'</h1>');continue;}
+    if (/^---+$/.test(l.trim())){if(inList){out.push('</ul>');inList=false;}out.push('<hr>');continue;}
+    if (/^\x00BLOCK\d+\x00$/.test(l.trim())){
       if(inList){out.push('</ul>');inList=false;}
-      const idx = parseInt(l.match(/\d+/)[0]);
-      out.push('<div class="math-block">'+esc(blocks[idx])+'</div>');
-      continue;
+      out.push('<div class="math-block">'+esc(blocks[parseInt(l.match(/\d+/)[0])])+'</div>');continue;
     }
-
-    // list items
-    if (/^[-*] /.test(l)) {
-      if (!inList) { out.push('<ul>'); inList = true; }
-      out.push('<li>'+inline(l.slice(2),ext)+'</li>');
-      continue;
-    }
-
-    // empty line
-    if (l.trim() === '') {
-      if (inList) { out.push('</ul>'); inList = false; }
-      continue;
-    }
-
-    if (inList) { out.push('</ul>'); inList = false; }
+    if (/^[-*] /.test(l)){if(!inList){out.push('<ul>');inList=true;}out.push('<li>'+inline(l.slice(2),ext)+'</li>');continue;}
+    if (l.trim()===''){if(inList){out.push('</ul>');inList=false;}continue;}
+    if (inList){out.push('</ul>');inList=false;}
     out.push('<p>'+inline(l,ext)+'</p>');
   }
   if (inList) out.push('</ul>');
@@ -496,71 +599,50 @@ function renderContent(raw, ext) {
 }
 
 function inline(s, ext) {
-  // wikilinks
-  s = s.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, target, alias) => {
-    const id = target.trim().replace(/\.[a-z]+$/, '');
-    const label = (alias || id).trim();
-    return `<span class="wikilink" onclick="openReader(${JSON.stringify(id)})">${esc(label)}</span>`;
+  s = s.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_,target,alias) => {
+    const id = target.trim().replace(/\.[a-z]+$/,'');
+    return `<span class="wikilink" onclick="openReader(${JSON.stringify(id)})">${esc((alias||id).trim())}</span>`;
   });
-  // inline math
-  s = s.replace(/\$([^$\n]+)\$/g, (_, m) => `<span class="math-inline">${esc(m)}</span>`);
-  // bold + italic (md)
-  s = s.replace(/\*\*\*(.+?)\*\*\*/g, (_,m)=>`<strong><em>${esc(m)}</em></strong>`);
-  s = s.replace(/\*\*(.+?)\*\*/g,     (_,m)=>`<strong>${esc(m)}</strong>`);
-  s = s.replace(/\*(.+?)\*/g,         (_,m)=>`<em>${esc(m)}</em>`);
-  s = s.replace(/_([^_\n]+)_/g,       (_,m)=>`<em>${esc(m)}</em>`);
-  // blockquote inline (> at start)
+  s = s.replace(/\$([^$\n]+)\$/g, (_,m) => `<span class="math-inline">${esc(m)}</span>`);
+  s = s.replace(/\*\*\*(.+?)\*\*\*/g, (_,m) => `<strong><em>${esc(m)}</em></strong>`);
+  s = s.replace(/\*\*(.+?)\*\*/g,     (_,m) => `<strong>${esc(m)}</strong>`);
+  s = s.replace(/\*(.+?)\*/g,         (_,m) => `<em>${esc(m)}</em>`);
+  s = s.replace(/_([^_\n]+)_/g,       (_,m) => `<em>${esc(m)}</em>`);
   if (/^> /.test(s)) s = `<blockquote>${s.slice(2)}</blockquote>`;
   return s;
 }
-
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── Reader panel ───────────────────────────────────────────────────────────
 function openReader(id) {
   const n = nodeById[id];
   if (!n) return;
-
   document.getElementById('reader-title').textContent = n.id;
   document.getElementById('reader-body').innerHTML = renderContent(n.content, n.ext);
   document.getElementById('reader').classList.add('open');
-
-  // outgoing links
-  const outLinks = (backlinks[id] ? [] : []).concat([]); // just use raw link data
-  const rawOut = rawEdges.filter(e => e.source === id).map(e => e.target);
-  const rawIn  = (backlinks[id] || []);
-
-  const outDiv = document.getElementById('reader-out');
-  const inDiv  = document.getElementById('reader-in');
-
-  outDiv.innerHTML = rawOut.length
-    ? rawOut.map(t => `<span class="rtag" onclick="openReader(${JSON.stringify(t)})">${esc(t)}</span>`).join('')
-    : '<span class="none">none</span>';
-
-  inDiv.innerHTML = rawIn.length
-    ? rawIn.map(s => `<span class="rtag" onclick="openReader(${JSON.stringify(s)})">${esc(s)}</span>`).join('')
-    : '<span class="none">none</span>';
-
-  // highlight in graph and table
-  document.querySelectorAll('.node.focused').forEach(el => el.classList.remove('focused'));
-  const el = document.getElementById('n-' + id);
+  const rawOut = rawEdges.filter(e => e.source===id).map(e => e.target);
+  const rawIn  = backlinks[id] || [];
+  document.getElementById('reader-out').innerHTML = rawOut.length
+    ? rawOut.map(t=>`<span class="rtag" onclick="openReader(${JSON.stringify(t)})">${esc(t)}</span>`).join('')
+    : '<span class="rnone">none</span>';
+  document.getElementById('reader-in').innerHTML = rawIn.length
+    ? rawIn.map(s=>`<span class="rtag" onclick="openReader(${JSON.stringify(s)})">${esc(s)}</span>`).join('')
+    : '<span class="rnone">none</span>';
+  document.querySelectorAll('.node.focused').forEach(el=>el.classList.remove('focused'));
+  const el = document.getElementById('n-'+id);
   if (el) el.classList.add('focused');
-  const row = document.getElementById('row-' + id);
-  if (row) {
-    document.querySelectorAll('tr.hl').forEach(r => r.classList.remove('hl'));
+  const row = document.getElementById('row-'+id);
+  if (row){
+    document.querySelectorAll('tr.hl').forEach(r=>r.classList.remove('hl'));
     row.classList.add('hl');
-    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    row.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
 }
-
-function closeReader() {
+function closeReader(){
   document.getElementById('reader').classList.remove('open');
-  document.querySelectorAll('.node.focused').forEach(el => el.classList.remove('focused'));
+  document.querySelectorAll('.node.focused').forEach(el=>el.classList.remove('focused'));
 }
-
-function focusNode(id) { openReader(id); }
+function focusNode(id){ openReader(id); }
 </script>
 </body>
 </html>]]
