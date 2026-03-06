@@ -123,24 +123,24 @@ tr.hl td{background:#fef9c3}
       <button onclick="document.getElementById('controls').style.display='none';document.getElementById('controls-toggle').style.display='block'">&#x2715;</button>
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Repulsion</span><span class="ctrl-val" id="rv">500</span></div>
+      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">35</span></div>
+      <input type="range" id="s-center" min="1" max="100" value="35">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label"><span>Repel Force</span><span class="ctrl-val" id="rv">500</span></div>
       <input type="range" id="s-repulse" min="50" max="1200" value="500">
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label"><span>Link Force</span><span class="ctrl-val" id="lfv">5</span></div>
+      <input type="range" id="s-linkforce" min="1" max="20" value="5">
     </div>
     <div class="ctrl-row">
       <div class="ctrl-label"><span>Link Distance</span><span class="ctrl-val" id="ldv">160</span></div>
       <input type="range" id="s-dist" min="20" max="400" value="160">
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">35</span></div>
-      <input type="range" id="s-center" min="1" max="100" value="35">
-    </div>
-    <div class="ctrl-row">
-      <div class="ctrl-label"><span>Node Size</span><span class="ctrl-val" id="nsv">10</span></div>
-      <input type="range" id="s-size" min="3" max="24" value="10">
-    </div>
-    <div class="ctrl-row">
-      <div class="ctrl-label"><span>Labels</span></div>
-      <button id="btn-labels" style="width:100%;background:#3a3d45;border:1px solid #5a5d65;border-radius:3px;color:#d0d3db;padding:3px 0;cursor:pointer;font-size:.8rem">On</button>
+      <div class="ctrl-label"><span>Text Fade</span><span class="ctrl-val" id="tfv">100</span></div>
+      <input type="range" id="s-textfade" min="0" max="100" value="100">
     </div>
   </div>
   <button id="controls-toggle" onclick="document.getElementById('controls').style.display='block';this.style.display='none'">&#x2699; Settings</button>
@@ -178,11 +178,12 @@ const NS = 'http://www.w3.org/2000/svg';
 const W = svg.clientWidth, H = svg.clientHeight;
 
 // ── Physics params ─────────────────────────────────────────────────────────
-let REPULSE   = 500;
-let LINK_DIST = 160;
-let CENTER_F  = 0.035;
-let BASE_R    = 10;
-let LABEL_MODE = 1;
+let REPULSE    = 500;
+let LINK_DIST  = 160;
+let LINK_FORCE = 0.5;
+let CENTER_F   = 0.035;
+const BASE_R   = 10;
+let LABEL_OPACITY = 1.0;
 
 // ── Persistent state across data refreshes ─────────────────────────────────
 const nodePositions = new Map();
@@ -234,16 +235,11 @@ function wireSlider(id, valId, onInput) {
     reheat();
   });
 }
-wireSlider('s-repulse', 'rv',  v => { REPULSE   = v; });
-wireSlider('s-dist',    'ldv', v => { LINK_DIST = v; });
-wireSlider('s-center',  'cfv', v => { CENTER_F  = v / 1000; });
-wireSlider('s-size',    'nsv', v => { BASE_R = v; updateNodeSizes(); });
-
-document.getElementById('btn-labels').addEventListener('click', () => {
-  LABEL_MODE = LABEL_MODE === 1 ? 0 : 1;
-  document.getElementById('btn-labels').textContent = LABEL_MODE === 1 ? 'On' : 'Off';
-  updateLabelVisibility();
-});
+wireSlider('s-center',   'cfv', v => { CENTER_F   = v / 1000; });
+wireSlider('s-repulse',  'rv',  v => { REPULSE    = v; });
+wireSlider('s-linkforce','lfv', v => { LINK_FORCE = v / 10; });
+wireSlider('s-dist',     'ldv', v => { LINK_DIST  = v; });
+wireSlider('s-textfade', 'tfv', v => { LABEL_OPACITY = v / 100; updateLabelVisibility(); });
 
 function updateNodeSizes() {
   nodes.forEach(n => {
@@ -260,7 +256,7 @@ function updateLabelVisibility() {
   nodeEls.forEach(el => {
     const text = el.querySelector('text');
     if (!text) return;
-    text.style.opacity = LABEL_MODE === 1 ? 1 : 0;
+    text.style.opacity = LABEL_OPACITY;
   });
 }
 
@@ -292,7 +288,7 @@ function simTick() {
   links.forEach(l => {
     const dx = l.target.x-l.source.x, dy = l.target.y-l.source.y;
     const d = Math.sqrt(dx*dx+dy*dy)||1;
-    const f = (d-LINK_DIST)/d*0.5*alpha;
+    const f = (d-LINK_DIST)/d*LINK_FORCE*alpha;
     if (l.source.fx==null){l.source.vx+=f*dx; l.source.vy+=f*dy;}
     if (l.target.fx==null){l.target.vx-=f*dx; l.target.vy-=f*dy;}
   });
@@ -394,7 +390,7 @@ function rebuildGraph(rawN, rawE) {
     text.setAttribute('dy', '0.35em');
     text.setAttribute('x', r + 3);
     text.textContent = n.id;
-    text.style.opacity = LABEL_MODE === 1 ? 1 : 0;
+    text.style.opacity = LABEL_OPACITY;
 
     grp.appendChild(circle);
     grp.appendChild(text);
