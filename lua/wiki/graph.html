@@ -6,6 +6,7 @@
 <title>Brain</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-force@3/dist/d3-force.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Linux Libertine','Georgia',serif;background:#f8f9fa;color:#202122;height:100vh;display:flex;flex-direction:column}
@@ -139,6 +140,10 @@ tr.hl td{background:#fef9c3}
       <input type="range" id="s-dist" min="20" max="400" value="160">
     </div>
     <div class="ctrl-row">
+      <div class="ctrl-label"><span>Node Size</span><span class="ctrl-val" id="nsv">10</span></div>
+      <input type="range" id="s-size" min="3" max="24" value="10">
+    </div>
+    <div class="ctrl-row">
       <div class="ctrl-label"><span>Text Fade</span><span class="ctrl-val" id="tfv">100</span></div>
       <input type="range" id="s-textfade" min="0" max="100" value="100">
     </div>
@@ -182,7 +187,7 @@ let REPULSE    = 500;
 let LINK_DIST  = 160;
 let LINK_FORCE = 0.5;
 let CENTER_F   = 0.035;
-const BASE_R   = 10;
+let BASE_R     = 10;
 let LABEL_OPACITY = 1.0;
 
 // ── Persistent state across data refreshes ─────────────────────────────────
@@ -235,10 +240,11 @@ function wireSlider(id, valId, onInput) {
     reheat();
   });
 }
-wireSlider('s-center',   'cfv', v => { CENTER_F   = v / 1000; });
-wireSlider('s-repulse',  'rv',  v => { REPULSE    = v; });
-wireSlider('s-linkforce','lfv', v => { LINK_FORCE = v / 10; });
-wireSlider('s-dist',     'ldv', v => { LINK_DIST  = v; });
+wireSlider('s-center',   'cfv', v => { CENTER_F   = v / 1000; if (simulation) simulation.force('center').strength(CENTER_F); });
+wireSlider('s-repulse',  'rv',  v => { REPULSE    = v; if (simulation) simulation.force('charge').strength(-REPULSE / 5); });
+wireSlider('s-linkforce','lfv', v => { LINK_FORCE = v / 10; if (simulation) simulation.force('link').strength(LINK_FORCE); });
+wireSlider('s-dist',     'ldv', v => { LINK_DIST  = v; if (simulation) simulation.force('link').distance(LINK_DIST); });
+wireSlider('s-size',     'nsv', v => { BASE_R = v; updateNodeSizes(); if (simulation) simulation.force('collision').radius(n => (n._r || BASE_R) + 2); });
 wireSlider('s-textfade', 'tfv', v => { LABEL_OPACITY = v / 100; updateLabelVisibility(); });
 
 function updateNodeSizes() {
@@ -260,67 +266,11 @@ function updateLabelVisibility() {
   });
 }
 
-// ── Force simulation ───────────────────────────────────────────────────────
-let alpha = 0;
-const ALPHA_DECAY = 0.018, ALPHA_MIN = 0.001, VEL_DECAY = 0.3;
-let rafId = null;
-
-function simTick() {
-  if (alpha < ALPHA_MIN) { rafId = null; return; }
-  alpha *= (1 - ALPHA_DECAY);
-  const collideR = BASE_R * 2.8;
-
-  nodes.forEach(n => {
-    if (n.fx == null) n.vx += (W/2 - n.x) * CENTER_F * alpha;
-    if (n.fy == null) n.vy += (H/2 - n.y) * CENTER_F * alpha;
-  });
-
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i+1; j < nodes.length; j++) {
-      const a = nodes[i], b = nodes[j];
-      const dx = b.x-a.x, dy = b.y-a.y, d = Math.sqrt(dx*dx+dy*dy)||1;
-      const f = REPULSE/(d*d)*alpha;
-      if (a.fx==null){a.vx-=f*dx/d; a.vy-=f*dy/d;}
-      if (b.fx==null){b.vx+=f*dx/d; b.vy+=f*dy/d;}
-    }
-  }
-
-  links.forEach(l => {
-    const dx = l.target.x-l.source.x, dy = l.target.y-l.source.y;
-    const d = Math.sqrt(dx*dx+dy*dy)||1;
-    const f = (d-LINK_DIST)/d*LINK_FORCE*alpha;
-    if (l.source.fx==null){l.source.vx+=f*dx; l.source.vy+=f*dy;}
-    if (l.target.fx==null){l.target.vx-=f*dx; l.target.vy-=f*dy;}
-  });
-
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i+1; j < nodes.length; j++) {
-      const a = nodes[i], b = nodes[j];
-      const dx = b.x-a.x, dy = b.y-a.y, d = Math.sqrt(dx*dx+dy*dy)||1;
-      if (d < collideR) {
-        const ov = (collideR-d)/d*0.9;
-        if (a.fx==null){a.vx-=dx*ov; a.vy-=dy*ov;}
-        if (b.fx==null){b.vx+=dx*ov; b.vy+=dy*ov;}
-      }
-    }
-  }
-
-  nodes.forEach(n => {
-    if (n.fx!=null){n.x=n.fx;n.vx=0;}else{n.vx*=(1-VEL_DECAY);n.x+=n.vx;}
-    if (n.fy!=null){n.y=n.fy;n.vy=0;}else{n.vy*=(1-VEL_DECAY);n.y+=n.vy;}
-  });
-
-  lineEls.forEach((el,i) => {
-    el.setAttribute('x1',links[i].source.x); el.setAttribute('y1',links[i].source.y);
-    el.setAttribute('x2',links[i].target.x); el.setAttribute('y2',links[i].target.y);
-  });
-  nodeEls.forEach((el,i) => el.setAttribute('transform',`translate(${nodes[i].x},${nodes[i].y})`));
-  rafId = requestAnimationFrame(simTick);
-}
+// ── Force simulation (d3-force) ────────────────────────────────────────────
+let simulation = null;
 
 function reheat() {
-  alpha = 0.3;
-  if (!rafId) rafId = requestAnimationFrame(simTick);
+  if (simulation) simulation.alpha(0.3).restart();
 }
 
 // ── Node colour ────────────────────────────────────────────────────────────
@@ -337,8 +287,7 @@ function rebuildGraph(rawN, rawE) {
   // save positions before clearing
   nodes.forEach(n => nodePositions.set(n.id, { x: n.x, y: n.y }));
 
-  alpha = 0;
-  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  if (simulation) simulation.stop();
   linksG.innerHTML = '';
   nodesG.innerHTML = '';
   lineEls = [];
@@ -417,13 +366,15 @@ function rebuildGraph(rawN, rawE) {
     grp.addEventListener('mousedown', e => {
       e.stopPropagation();
       const rect = svg.getBoundingClientRect();
-      n.fx = n.x; n.fy = n.y; reheat();
+      n.fx = n.x; n.fy = n.y;
+      simulation.alphaTarget(0.3).restart();
       const onMove = e2 => {
         n.fx = (e2.clientX - rect.left - tx) / sc;
         n.fy = (e2.clientY - rect.top  - ty) / sc;
       };
       const onUp = () => {
         n.fx = null; n.fy = null;
+        simulation.alphaTarget(0);
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
       };
@@ -434,7 +385,19 @@ function rebuildGraph(rawN, rawE) {
     return grp;
   });
 
-  reheat();
+  simulation = d3.forceSimulation(nodes)
+    .force('link',      d3.forceLink(links).distance(LINK_DIST).strength(LINK_FORCE))
+    .force('charge',    d3.forceManyBody().strength(-REPULSE / 5))
+    .force('center',    d3.forceCenter(W / 2, H / 2).strength(CENTER_F))
+    .force('collision', d3.forceCollide(n => (n._r || BASE_R) + 2).strength(0.8))
+    .on('tick', () => {
+      lineEls.forEach((el, i) => {
+        el.setAttribute('x1', links[i].source.x); el.setAttribute('y1', links[i].source.y);
+        el.setAttribute('x2', links[i].target.x); el.setAttribute('y2', links[i].target.y);
+      });
+      nodeEls.forEach((el, i) => el.setAttribute('transform', `translate(${nodes[i].x},${nodes[i].y})`));
+    });
+
   if (typeof doSearch === 'function') doSearch();
 }
 
