@@ -1,7 +1,11 @@
 'use strict';
-const http = require('node:http');
-const fs   = require('node:fs');
-const path = require('node:path');
+const http       = require('node:http');
+const fs         = require('node:fs');
+const path       = require('node:path');
+const os         = require('node:os');
+const { execFile } = require('node:child_process');
+
+const renderCache = new Map(); // id -> { mtime, html }
 
 const [,, wikiRoot, portArg] = process.argv;
 const PORT = parseInt(portArg) || 5757;
@@ -59,7 +63,10 @@ function parseLinks(content) {
 const sseClients = new Set();
 let debounce = null;
 try {
-  fs.watch(wikiRoot, { persistent: false }, () => {
+  fs.watch(wikiRoot, { persistent: false }, (_, filename) => {
+    if (filename && filename.endsWith('.typ')) {
+      renderCache.delete(filename.slice(0, -4));
+    }
     clearTimeout(debounce);
     debounce = setTimeout(() => {
       for (const res of sseClients) res.write('data: refresh\n\n');
@@ -98,6 +105,52 @@ const server = http.createServer((req, res) => {
     res.write('data: connected\n\n');
     sseClients.add(res);
     req.on('close', () => sseClients.delete(res));
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/render') {
+    const id = url.searchParams.get('id');
+    if (!id) { res.writeHead(400); res.end('missing id'); return; }
+
+    const typFile = path.join(wikiRoot, id + '.typ');
+    let mtime;
+    try { mtime = fs.statSync(typFile).mtimeMs; }
+    catch { res.writeHead(404); res.end('not found'); return; }
+
+    const cached = renderCache.get(id);
+    if (cached && cached.mtime === mtime) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(cached.html);
+      return;
+    }
+
+    let tmpDir;
+    try { tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiki-typst-')); }
+    catch { res.writeHead(500); res.end('tmpdir error'); return; }
+
+    const outPath = path.join(tmpDir, 'out.svg');
+    execFile('typst', ['compile', typFile, outPath], err => {
+      if (err) {
+        try { fs.rmSync(tmpDir, { recursive: true }); } catch {}
+        res.writeHead(500); res.end('typst: ' + err.message);
+        return;
+      }
+      let svgs = [];
+      try {
+        svgs = fs.readdirSync(tmpDir)
+          .filter(f => f.endsWith('.svg'))
+          .sort()
+          .map(f => fs.readFileSync(path.join(tmpDir, f), 'utf8'));
+      } catch {}
+      try { fs.rmSync(tmpDir, { recursive: true }); } catch {}
+
+      if (svgs.length === 0) { res.writeHead(500); res.end('no output'); return; }
+
+      const html = svgs.map(s => `<div class="typst-page">${s}</div>`).join('');
+      renderCache.set(id, { mtime, html });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(html);
+    });
     return;
   }
 

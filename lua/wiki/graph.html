@@ -4,13 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Brain</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Linux Libertine','Georgia',serif;background:#f8f9fa;color:#202122;height:100vh;display:flex;flex-direction:column}
 
-header{background:#fff;border-bottom:1px solid #a2a9b1;padding:12px 28px;display:flex;align-items:baseline;gap:14px;flex-shrink:0}
+header{background:#fff;border-bottom:1px solid #a2a9b1;padding:12px 28px;display:flex;align-items:center;gap:14px;flex-shrink:0}
 header h1{font-size:1.5rem;font-weight:normal;letter-spacing:.02em}
 header span{color:#54595d;font-size:.9rem}
+#search{margin-left:auto;padding:5px 10px;border:1px solid #a2a9b1;border-radius:3px;font-size:.85rem;width:220px;background:#f8f9fa;color:#202122;font-family:inherit}
+#search:focus{outline:none;border-color:#3366cc;background:#fff}
+#search::placeholder{color:#a2a9b1}
 
 .main{flex:1;overflow:hidden;display:flex}
 .left{flex:1;overflow-y:auto;min-width:0}
@@ -93,12 +98,14 @@ tr.hl td{background:#fef9c3}
 #reader-links .rtag{display:inline-block;background:#eaecf0;border-radius:2px;padding:2px 8px;margin:2px;font-size:.8rem;cursor:pointer;color:#3366cc}
 #reader-links .rtag:hover{background:#c8ccd1}
 .rnone{color:#a2a9b1;font-style:italic}
+.typst-page{margin-bottom:16px}.typst-page svg{width:100%;height:auto;display:block}
 </style>
 </head>
 <body>
 <header>
   <h1>&#x1F9E0; Brain</h1>
   <span id="stats">Loading&hellip;</span>
+  <input id="search" type="text" placeholder="Search notes&hellip;" autocomplete="off">
 </header>
 <div class="main">
 <div class="left"><div class="section">
@@ -432,6 +439,7 @@ function rebuildGraph(rawN, rawE) {
   });
 
   reheat();
+  if (typeof doSearch === 'function') doSearch();
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
@@ -507,7 +515,7 @@ function renderContent(raw, ext) {
     if (/^---+$/.test(l.trim())){if(inList){out.push('</ul>');inList=false;}out.push('<hr>');continue;}
     if (/^\x00BLOCK\d+\x00$/.test(l.trim())){
       if(inList){out.push('</ul>');inList=false;}
-      out.push('<div class="math-block">'+esc(blocks[parseInt(l.match(/\d+/)[0])])+'</div>');continue;
+      out.push('<div class="math-block" data-latex="'+escAttr(blocks[parseInt(l.match(/\d+/)[0])])+'"></div>');continue;
     }
     if (/^[-*] /.test(l)){if(!inList){out.push('<ul>');inList=true;}out.push('<li>'+inline(l.slice(2),ext)+'</li>');continue;}
     if (l.trim()===''){if(inList){out.push('</ul>');inList=false;}continue;}
@@ -523,7 +531,7 @@ function inline(s, ext) {
     const id = target.trim().replace(/\.[a-z]+$/,'');
     return `<span class="wikilink" onclick='openReader(${ja(id)})'>${esc((alias||id).trim())}</span>`;
   });
-  s = s.replace(/\$([^$\n]+)\$/g, (_,m) => `<span class="math-inline">${esc(m)}</span>`);
+  s = s.replace(/\$([^$\n]+)\$/g, (_,m) => `<span class="math-inline" data-latex="${escAttr(m)}"></span>`);
   s = s.replace(/\*\*\*(.+?)\*\*\*/g, (_,m) => `<strong><em>${esc(m)}</em></strong>`);
   s = s.replace(/\*\*(.+?)\*\*/g,     (_,m) => `<strong>${esc(m)}</strong>`);
   s = s.replace(/\*(.+?)\*/g,         (_,m) => `<em>${esc(m)}</em>`);
@@ -535,6 +543,10 @@ function inline(s, ext) {
 // HTML-escape for text content
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+// HTML-escape for attribute values (also escapes quotes)
+function escAttr(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 // JSON.stringify + escape quotes for use inside HTML attributes
 function ja(s) {
@@ -580,8 +592,19 @@ function openReader(id) {
 
   document.getElementById('reader-title').textContent = n.id;
   const body = document.getElementById('reader-body');
-  body.innerHTML = renderContent(n.content, n.ext);
   body.scrollTop = 0;
+
+  if (n.ext === 'typ') {
+    body.innerHTML = '<p style="color:#54595d;font-size:.85rem;padding:8px 0">Rendering\u2026</p>';
+    const thisFetch = ++fetchId;
+    fetch(`/render?id=${encodeURIComponent(id)}`)
+      .then(r => r.ok ? r.text() : Promise.reject())
+      .then(html => { if (fetchId === thisFetch) body.innerHTML = html; })
+      .catch(() => { if (fetchId === thisFetch) { body.innerHTML = renderContent(n.content, n.ext); renderMath(body); } });
+  } else {
+    body.innerHTML = renderContent(n.content, n.ext);
+    renderMath(body);
+  }
   document.getElementById('reader').classList.add('open');
 
   const rawOut = rawEdges.filter(e => e.source === id).map(e => e.target);
@@ -619,6 +642,42 @@ function closeReader() {
   document.querySelectorAll('.node.focused').forEach(el => el.classList.remove('focused'));
   currentNodeId = null;
 }
+
+let fetchId = 0;
+
+function renderMath(el) {
+  if (typeof katex === 'undefined') return;
+  el.querySelectorAll('[data-latex]').forEach(node => {
+    try {
+      node.innerHTML = katex.renderToString(node.dataset.latex, {
+        displayMode: node.classList.contains('math-block'),
+        throwOnError: false,
+      });
+    } catch {}
+  });
+}
+
+// ── Search ─────────────────────────────────────────────────────────────────
+function doSearch() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  if (!q) {
+    nodeEls.forEach(el => { el.style.opacity = ''; });
+    document.querySelectorAll('#notes-tbody tr').forEach(r => { r.style.display = ''; });
+    return;
+  }
+  const matching = new Set(
+    rawNodes
+      .filter(n => n.id.toLowerCase().includes(q) || n.content.toLowerCase().includes(q))
+      .map(n => n.id)
+  );
+  nodeEls.forEach((el, i) => { el.style.opacity = matching.has(nodes[i].id) ? '1' : '0.08'; });
+  document.querySelectorAll('#notes-tbody tr').forEach(r => {
+    const id = r.querySelector('.note-name')?.textContent;
+    r.style.display = matching.has(id) ? '' : 'none';
+  });
+}
+
+document.getElementById('search').addEventListener('input', doSearch);
 
 function openInNeovim() {
   if (!currentNodeId) return;
