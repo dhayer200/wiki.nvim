@@ -50,6 +50,9 @@ h2{font-size:.8rem;font-weight:bold;border-bottom:1px solid #a2a9b1;padding-bott
 #controls{position:absolute;bottom:12px;right:12px;background:rgba(30,32,36,.95);border:1px solid #3a3d45;border-radius:4px;padding:10px 12px;width:190px;font-size:.8rem;color:#d0d3db}
 #controls-toggle{position:absolute;bottom:12px;right:12px;background:rgba(30,32,36,.85);border:1px solid #3a3d45;border-radius:4px;padding:5px 10px;color:#8a8d95;font-size:.78rem;cursor:pointer}
 #controls-toggle:hover{color:#d0d3db}
+#graph-fs-btn{position:absolute;top:8px;right:8px;background:rgba(30,32,36,.85);border:1px solid #3a3d45;border-radius:4px;padding:4px 9px;color:#8a8d95;font-size:.85rem;cursor:pointer;z-index:10;line-height:1}
+#graph-fs-btn:hover{color:#d0d3db}
+#graph-wrap.graph-fullscreen{position:fixed;inset:0;height:100vh!important;width:100vw!important;border-radius:0;z-index:300;margin:0}
 .ctrl-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:bold;font-size:.79rem;color:#a0a3ab}
 .ctrl-title button{background:none;border:none;color:#8a8d95;cursor:pointer;font-size:.9rem;padding:0 2px}
 .ctrl-row{margin-bottom:7px}
@@ -118,7 +121,7 @@ tr.hl td{background:#fef9c3}
 <div id="graph-wrap">
   <svg id="svg"><g id="g"><g id="links-g"></g><g id="nodes-g"></g></g></svg>
   <div id="snap"><div class="t" id="snap-t"></div><div class="b" id="snap-b"></div></div>
-  <div id="controls">
+  <div id="controls" style="display:none">
     <div class="ctrl-title">
       <span>Graph Settings</span>
       <button onclick="document.getElementById('controls').style.display='none';document.getElementById('controls-toggle').style.display='block'">&#x2715;</button>
@@ -149,6 +152,7 @@ tr.hl td{background:#fef9c3}
     </div>
   </div>
   <button id="controls-toggle" onclick="document.getElementById('controls').style.display='block';this.style.display='none'">&#x2699; Settings</button>
+  <button id="graph-fs-btn" onclick="toggleGraphFullscreen()" title="Fullscreen graph">&#x26F6;</button>
 </div>
 
 <h2>All Notes</h2>
@@ -531,6 +535,26 @@ function panToNode(n) {
 }
 
 let readerFullscreen = false;
+let graphFullscreen = false;
+
+function toggleGraphFullscreen() {
+  graphFullscreen = !graphFullscreen;
+  wrap.classList.toggle('graph-fullscreen', graphFullscreen);
+  const btn = document.getElementById('graph-fs-btn');
+  btn.textContent = graphFullscreen ? '\u2715' : '\u26F6';
+  btn.title = graphFullscreen ? 'Exit fullscreen' : 'Fullscreen graph';
+  // update center force to new dimensions
+  if (simulation) {
+    const r = svg.getBoundingClientRect();
+    simulation.force('center', d3.forceCenter(r.width/2, r.height/2).strength(CENTER_F));
+    simulation.alpha(0.2).restart();
+  }
+}
+
+// Close graph fullscreen on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && graphFullscreen) toggleGraphFullscreen();
+});
 
 function toggleFullscreen() {
   const r = document.getElementById('reader');
