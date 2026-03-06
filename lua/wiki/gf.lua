@@ -12,9 +12,17 @@ function M.gf_create(Wiki)
   -- normalize [[note|alias]] etc for file creation
   local name = target:gsub("|.*$", ""):gsub("^%s+", ""):gsub("%s+$", "")
 
-  -- If no extension, default to .md
+  -- If no extension, search for an existing file with any configured extension
   if not name:match("%.[%w_%-]+$") then
-    name = name .. ".md"
+    local found
+    for _, ext in ipairs(Wiki.extensions) do
+      local candidate = Wiki.root .. "/" .. name .. "." .. ext
+      if vim.fn.filereadable(candidate) == 1 then
+        found = candidate
+        break
+      end
+    end
+    name = found and vim.fn.fnamemodify(found, ":t") or (name .. ".md")
   end
 
   local path = name
