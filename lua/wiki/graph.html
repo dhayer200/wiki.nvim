@@ -124,20 +124,20 @@ tr.hl td{background:#fef9c3}
       <button onclick="document.getElementById('controls').style.display='none';document.getElementById('controls-toggle').style.display='block'">&#x2715;</button>
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">35</span></div>
-      <input type="range" id="s-center" min="1" max="100" value="35">
+      <div class="ctrl-label"><span>Center Force</span><span class="ctrl-val" id="cfv">5</span></div>
+      <input type="range" id="s-center" min="1" max="100" value="5">
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Repel Force</span><span class="ctrl-val" id="rv">500</span></div>
-      <input type="range" id="s-repulse" min="50" max="1200" value="500">
+      <div class="ctrl-label"><span>Repel Force</span><span class="ctrl-val" id="rv">300</span></div>
+      <input type="range" id="s-repulse" min="10" max="800" value="300">
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Link Force</span><span class="ctrl-val" id="lfv">5</span></div>
-      <input type="range" id="s-linkforce" min="1" max="20" value="5">
+      <div class="ctrl-label"><span>Link Force</span><span class="ctrl-val" id="lfv">3</span></div>
+      <input type="range" id="s-linkforce" min="1" max="10" value="3">
     </div>
     <div class="ctrl-row">
-      <div class="ctrl-label"><span>Link Distance</span><span class="ctrl-val" id="ldv">160</span></div>
-      <input type="range" id="s-dist" min="20" max="400" value="160">
+      <div class="ctrl-label"><span>Link Distance</span><span class="ctrl-val" id="ldv">120</span></div>
+      <input type="range" id="s-dist" min="20" max="400" value="120">
     </div>
     <div class="ctrl-row">
       <div class="ctrl-label"><span>Node Size</span><span class="ctrl-val" id="nsv">10</span></div>
@@ -183,10 +183,10 @@ const NS = 'http://www.w3.org/2000/svg';
 const W = svg.clientWidth, H = svg.clientHeight;
 
 // ── Physics params ─────────────────────────────────────────────────────────
-let REPULSE    = 500;
-let LINK_DIST  = 160;
-let LINK_FORCE = 0.5;
-let CENTER_F   = 0.035;
+let REPULSE    = 300;
+let LINK_DIST  = 120;
+let LINK_FORCE = 0.3;
+let CENTER_F   = 0.05;
 let BASE_R     = 10;
 let LABEL_OPACITY = 1.0;
 
@@ -241,7 +241,7 @@ function wireSlider(id, valId, onInput) {
   });
 }
 wireSlider('s-center',   'cfv', v => { CENTER_F   = v / 1000; if (simulation) simulation.force('center').strength(CENTER_F); });
-wireSlider('s-repulse',  'rv',  v => { REPULSE    = v; if (simulation) simulation.force('charge').strength(-REPULSE / 5); });
+wireSlider('s-repulse',  'rv',  v => { REPULSE    = v; if (simulation) simulation.force('charge').strength(-REPULSE); });
 wireSlider('s-linkforce','lfv', v => { LINK_FORCE = v / 10; if (simulation) simulation.force('link').strength(LINK_FORCE); });
 wireSlider('s-dist',     'ldv', v => { LINK_DIST  = v; if (simulation) simulation.force('link').distance(LINK_DIST); });
 wireSlider('s-size',     'nsv', v => { BASE_R = v; updateNodeSizes(); if (simulation) simulation.force('collision').radius(n => (n._r || BASE_R) + 2); });
@@ -387,7 +387,7 @@ function rebuildGraph(rawN, rawE) {
 
   simulation = d3.forceSimulation(nodes)
     .force('link',      d3.forceLink(links).distance(LINK_DIST).strength(LINK_FORCE))
-    .force('charge',    d3.forceManyBody().strength(-REPULSE / 5))
+    .force('charge',    d3.forceManyBody().strength(-REPULSE))
     .force('center',    d3.forceCenter(W / 2, H / 2).strength(CENTER_F))
     .force('collision', d3.forceCollide(n => (n._r || BASE_R) + 2).strength(0.8))
     .on('tick', () => {
