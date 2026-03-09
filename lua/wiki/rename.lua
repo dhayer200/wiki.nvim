@@ -77,9 +77,10 @@ function M.rename(Wiki)
       if changed then
         vim.fn.writefile(lines, f)
         updated = updated + 1
-        -- reload buffer if open
+        -- reload buffer if open and unmodified
         local buf = vim.fn.bufnr(f)
-        if buf ~= -1 and vim.api.nvim_buf_is_loaded(buf) then
+        if buf ~= -1 and vim.api.nvim_buf_is_loaded(buf)
+            and not vim.bo[buf].modified then
           vim.api.nvim_buf_call(buf, function() vim.cmd("edit") end)
         end
       end
