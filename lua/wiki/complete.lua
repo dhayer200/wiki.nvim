@@ -41,6 +41,17 @@ function M.complete(Wiki)
       end
     end
 
+    -- if nothing matched the typed text, offer to create a new note
+    if #items == 0 and base_lc ~= "" then
+      local insert = inside and base or ("[[" .. base .. "]]")
+      table.insert(items, {
+        word = insert,
+        abbr = base .. "  [new]",
+        menu = "wiki:new",
+        kind = "f",
+      })
+    end
+
     return items
   end
 end

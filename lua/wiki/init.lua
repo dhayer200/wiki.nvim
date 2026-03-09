@@ -32,6 +32,23 @@ function Wiki.setup(opts)
     end,
   })
 
+  -- when a wiki:new item is confirmed, create the file and open it
+  vim.api.nvim_create_autocmd("CompleteDone", {
+    pattern = { "*.md", "*.typ", "*.txt", "*.tex", "*.rtf", "*.enex" },
+    callback = function()
+      local item = vim.v.completed_item
+      if not item or item.menu ~= "wiki:new" then return end
+      local word = item.word or ""
+      local stem = word:match("%[%[(.-)%]%]") or word
+      if stem == "" then return end
+      vim.schedule(function()
+        local path = active_root() .. "/" .. stem .. ".md"
+        require("wiki.util").ensure_file(path)
+        vim.cmd({ cmd = "edit", args = { path } })
+      end)
+    end,
+  })
+
   -- gf: open wikilinks, URLs, or plain files
   vim.keymap.set("n", "gf", function()
     require("wiki.gf").gf_create(with_root())
