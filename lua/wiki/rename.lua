@@ -32,7 +32,7 @@ function M.rename(Wiki)
 
   vim.ui.input({ prompt = prompt }, function(input)
     if not input or vim.trim(input) == "" then return end
-    local new_base = vim.trim(input)
+    local new_base = vim.trim(input):gsub("[\r\n]", "")
 
     -- keep same extension if user didn't supply one
     local old_ext = vim.fn.fnamemodify(old_file, ":e")
