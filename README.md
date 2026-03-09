@@ -8,7 +8,7 @@ A lightweight personal wiki plugin for Neovim. Navigate `[[wikilink]]` notes, br
 - `<C-x><C-u>` wikilink completion in markdown, typst, and text files
 - Outgoing links + backlinks in a vertical split panel
 - Browser graph view — D3 force graph with note reader, search, and live reload
-- Supports `.md`, `.typ` (Typst), and `.txt` files
+- Supports `.md`, `.typ` (Typst), `.tex` (LaTeX), `.txt`, `.rtf`, and `.enex` (Evernote) files
 
 ## Requirements
 
@@ -37,8 +37,8 @@ vim.pack.add({ src = "https://github.com/dhayer200/wiki.nvim" })
 
 ```lua
 require("wiki").setup({
-  root = "~/notes",                     -- wiki directory (default: cwd)
-  extensions = { "md", "typ", "txt" },  -- file types to scan
+  root = "~/notes",                                            -- wiki directory (default: cwd)
+  extensions = { "md", "typ", "txt", "rtf", "enex", "tex" }, -- file types to scan
 })
 ```
 
@@ -51,6 +51,9 @@ require("wiki").setup({
 | `:WikiGraph` | Start a local server and open the graph view in the browser. |
 | `:WikiDaily` | Open (or create) today's daily note (`YYYY-MM-DD.md`). |
 | `:WikiIndex` | Generate `index.md` — all notes sorted oldest-first with creation dates. |
+| `:WikiCreate <name[.ext]>` | Insert `[[name]]` at cursor and create `wiki_root/name.ext` (defaults to `.md`). |
+| `:WikiRename` | Rename current file or the `[[wikilink]]` under cursor; updates all backlinks. |
+| `:WikiSearch` | Fuzzy-pick and open any note. |
 
 ## Keymaps
 
@@ -79,7 +82,8 @@ In insert mode, `<C-x><C-u>` completes wikilinks from your wiki root:
 - **Featured** — 5 random notes with a blurb
 - **Graph** — D3 force-directed graph; nodes sized by link count; click to open the note reader
 - **All Notes** — sortable table of every note and its links
-- **Note reader** — renders markdown (with LaTeX via KaTeX) and Typst files; shows outgoing links and backlinks; live-reloads on file save
+- **Note reader** — renders markdown (with LaTeX via KaTeX), Typst, and LaTeX files; shows outgoing links and backlinks; live-reloads on file save
+- **Hover preview** — floating window preview of any `[[wikilink]]` on `CursorHold`
 
 Requires an internet connection to load D3 and KaTeX from CDN.
 

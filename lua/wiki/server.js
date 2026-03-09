@@ -9,7 +9,7 @@ const renderCache = new Map(); // id -> { mtime, html }
 
 const [,, wikiRoot, portArg] = process.argv;
 const PORT = parseInt(portArg) || 5757;
-const EXTS = ['md', 'typ', 'txt'];
+const EXTS = ['md', 'typ', 'txt', 'rtf', 'enex', 'tex'];
 
 // ── wiki scanning ──────────────────────────────────────────────────────────
 function scanWiki() {
@@ -28,7 +28,8 @@ function scanWiki() {
     nodeSet.add(name);
     let content = '';
     try { content = fs.readFileSync(path.join(wikiRoot, f), 'utf8'); } catch {}
-    nodes.push({ id: name, ext, content, blurb: getBlurb(content) });
+    const plain = toPlainText(content, ext);
+    nodes.push({ id: name, ext, content, blurb: getBlurb(plain) });
   }
 
   for (const node of nodes) {
@@ -37,6 +38,35 @@ function scanWiki() {
     }
   }
   return { nodes, edges };
+}
+
+// ── format normalizers ─────────────────────────────────────────────────────
+function toPlainText(content, ext) {
+  if (ext === 'rtf') {
+    return content
+      .replace(/\\\{/g, '\x01').replace(/\\\}/g, '\x02').replace(/\\\\/g, '\x03')
+      .replace(/\{\\[^{}]*\}/g, '')   // remove control groups like {\fonttbl ...}
+      .replace(/\\[a-zA-Z]+\d* ?/g, '') // remove control words like \par \b0
+      .replace(/[{}]/g, '')
+      .replace(/\x01/g, '{').replace(/\x02/g, '}').replace(/\x03/g, '\\')
+      .replace(/\s+/g, ' ').trim();
+  }
+  if (ext === 'enex') {
+    // extract title and ENML content from Evernote export XML
+    const title = (content.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
+    const enml  = (content.match(/<!\[CDATA\[([\s\S]*?)\]\]>/) || [])[1] || content;
+    const text  = enml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return title ? title + '\n' + text : text;
+  }
+  if (ext === 'tex') {
+    return content
+      .replace(/\\begin\{[^}]*\}[\s\S]*?\\end\{[^}]*\}/g, '') // remove environments
+      .replace(/\\[a-zA-Z]+\*?\{([^}]*)\}/g, '$1')            // \cmd{text} → text
+      .replace(/\\[a-zA-Z]+\*?/g, '')                          // bare commands
+      .replace(/[{}$%]/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+  }
+  return content;
 }
 
 function getBlurb(content) {

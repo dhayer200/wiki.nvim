@@ -9,6 +9,15 @@ function M.gf_create(Wiki)
     return
   end
 
+  -- open URLs in the browser
+  if target:match("^https?://") or target:match("^[a-z][a-z+%-%.]*://") then
+    local opener = vim.fn.has("mac") == 1 and "open"
+      or vim.fn.has("win32") == 1 and "explorer"
+      or "xdg-open"
+    vim.fn.jobstart({ opener, target }, { detach = true })
+    return
+  end
+
   -- normalize [[note|alias]] etc for file creation
   local name = target:gsub("|.*$", ""):gsub("^%s+", ""):gsub("%s+$", "")
 
