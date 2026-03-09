@@ -31,11 +31,18 @@ function M.complete(Wiki)
       local stem = vim.fn.fnamemodify(p, ":t:r")    -- e.g. "note"
       if stem:lower():find(base_lc, 1, true) then
         local insert = inside and stem or ("[[" .. stem .. "]]")
+        local blurb = ""
+        local ok, ls = pcall(vim.fn.readfile, p, "", 6)
+        if ok then
+          for _, l in ipairs(ls) do
+            local t = l:gsub("^#+%s*", ""):gsub("^=%+%s*", ""):gsub("^%s+", ""):gsub("%s+$", "")
+            if t ~= "" then blurb = t; break end
+          end
+        end
         table.insert(items, {
           word = insert,
-          abbr = name,
-          menu = "wiki",
-          info = scan.file_label(Wiki, p),
+          abbr = stem,
+          menu = blurb,
           kind = "f",
         })
       end
