@@ -52,7 +52,7 @@ end
 
 function M.open_note_by_name(Wiki, name)
   local path = M.ensure_note_path(Wiki, name)
-  vim.cmd("edit " .. vim.fn.fnameescape(path))
+  vim.cmd({ cmd = "edit", args = { path } })
 end
 
 function M.wiki_target_under_cursor()

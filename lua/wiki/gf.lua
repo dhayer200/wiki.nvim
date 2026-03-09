@@ -40,7 +40,7 @@ function M.gf_create(Wiki)
   end
 
   util.ensure_file(path)
-  vim.cmd("edit " .. vim.fn.fnameescape(path))
+  vim.cmd({ cmd = "edit", args = { path } })
 end
 
 return M

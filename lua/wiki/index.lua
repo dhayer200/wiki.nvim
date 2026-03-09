@@ -32,7 +32,7 @@ function M.generate_index(Wiki)
 
   local out = root .. "/index.md"
   vim.fn.writefile(lines, out)
-  vim.cmd("edit " .. vim.fn.fnameescape(out))
+  vim.cmd({ cmd = "edit", args = { out } })
   vim.notify(string.format("WikiIndex: %d notes → index.md", #entries))
 end
 

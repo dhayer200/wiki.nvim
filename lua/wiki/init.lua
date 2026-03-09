@@ -100,7 +100,7 @@ function Wiki.setup(opts)
       end,
     }, function(choice)
       if choice then
-        vim.cmd("edit " .. vim.fn.fnameescape(choice.path))
+        vim.cmd({ cmd = "edit", args = { choice.path } })
       end
     end)
   end, { desc = "Fuzzy-pick and open a wiki note" })
@@ -125,7 +125,7 @@ function Wiki.setup(opts)
     if vim.fn.filereadable(path) == 0 then
       vim.fn.writefile({ "# " .. date, "", "" }, path)
     end
-    vim.cmd("edit " .. vim.fn.fnameescape(path))
+    vim.cmd({ cmd = "edit", args = { path } })
   end, { desc = "Open today's daily note" })
 
   -- hover preview on CursorHold

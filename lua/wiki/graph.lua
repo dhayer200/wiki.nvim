@@ -41,7 +41,7 @@ function M.generate(Wiki)
           if file then
             vim.schedule(function()
               local full = root .. "/" .. file
-              vim.cmd("edit " .. vim.fn.fnameescape(full))
+              vim.cmd({ cmd = "edit", args = { full } })
             end)
           end
         end

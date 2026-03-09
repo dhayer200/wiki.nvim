@@ -81,7 +81,7 @@ function M.rename(Wiki)
         local buf = vim.fn.bufnr(f)
         if buf ~= -1 and vim.api.nvim_buf_is_loaded(buf)
             and not vim.bo[buf].modified then
-          vim.api.nvim_buf_call(buf, function() vim.cmd("edit") end)
+          vim.api.nvim_buf_call(buf, function() vim.cmd({ cmd = "edit", bang = true }) end)
         end
       end
     end
@@ -89,7 +89,7 @@ function M.rename(Wiki)
     -- if the renamed file was the current buffer, switch to new path
     local cur = vim.fn.expand("%:p")
     if cur == old_file then
-      vim.cmd("edit " .. vim.fn.fnameescape(new_file))
+      vim.cmd({ cmd = "edit", args = { new_file } })
     end
 
     vim.notify(string.format("WikiRename: '%s' → '%s'  (%d file(s) updated)",
