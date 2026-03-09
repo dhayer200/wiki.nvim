@@ -27,27 +27,18 @@ function M.complete(Wiki)
     local base_lc = (base or ""):lower()
 
     for _, p in ipairs(Wiki._cache.files) do
-      local stem = vim.fn.fnamemodify(p, ":t:r")    -- e.g. "note"
+      local stem = vim.fn.fnamemodify(p, ":t:r")
       if stem:lower():find(base_lc, 1, true) then
         local insert = inside and stem or ("[[" .. stem .. "]]")
-        local blurb = ""
-        local ok, ls = pcall(vim.fn.readfile, p, "", 6)
-        if ok then
-          for _, l in ipairs(ls) do
-            local t = l:gsub("^#+%s*", ""):gsub("^=%+%s*", ""):gsub("^%s+", ""):gsub("%s+$", "")
-            if t ~= "" then blurb = t; break end
-          end
-        end
         table.insert(items, {
           word = insert,
           abbr = stem,
-          menu = blurb,
           kind = "f",
         })
       end
     end
 
-    -- if nothing matched the typed text, offer to create a new note
+    -- if nothing matched, offer to create a new note
     if #items == 0 and base_lc ~= "" then
       local insert = inside and base or ("[[" .. base .. "]]")
       table.insert(items, {
