@@ -140,6 +140,63 @@ function Wiki.setup(opts)
     vim.cmd({ cmd = "edit", args = { path } })
   end, { desc = "Open today's daily note" })
 
+  -- WikiHelp — floating window showing all commands
+  vim.api.nvim_create_user_command("WikiHelp", function()
+    local lines = {
+      "  wiki.nvim help                              q / <Esc> to close  ",
+      "  ─────────────────────────────────────────────────────────────── ",
+      "                                                                   ",
+      "  NORMAL MODE                                                      ",
+      "  gf                 Open wikilink under cursor; follow URL;       ",
+      "                     create file if it doesn't exist               ",
+      "                                                                   ",
+      "  INSERT MODE                                                      ",
+      "  <C-x><C-u>         Open wiki completion picker                   ",
+      "  <C-n> / <C-p>      Next / previous item in picker                ",
+      "  <C-y>              Confirm selected item                         ",
+      "  <C-e>              Cancel completion                             ",
+      "  <C-u>              Revert to original typed text                 ",
+      "                                                                   ",
+      "  COMMANDS                                                         ",
+      "  :WikiLink           Jump to [[link]] under cursor, or open       ",
+      "                      completion picker                            ",
+      "  :WikiLink name      Create name.md and insert [[name]] at cursor ",
+      "  :WikiLink name.ext  Create name.ext and insert [[name]] at cursor",
+      "  :WikiRename         Rename current note or [[link]] under cursor;",
+      "                      updates all backlinks across the wiki        ",
+      "  :WikiPanel          Open outgoing links + backlinks side panel   ",
+      "  :WikiSearch         Fuzzy-pick and open any note                 ",
+      "  :WikiIndex          Generate index.md sorted by creation date    ",
+      "  :WikiGraph          Open interactive graph view in browser       ",
+      "  :WikiDaily          Open / create today's daily note             ",
+      "  :WikiHelp           Show this help window                        ",
+      "                                                                   ",
+    }
+    local width = 67
+    local height = #lines
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+    vim.bo[buf].modifiable = false
+    vim.bo[buf].filetype = "text"
+    local win = vim.api.nvim_open_win(buf, true, {
+      relative = "editor",
+      row = math.floor((vim.o.lines - height) / 2),
+      col = math.floor((vim.o.columns - width) / 2),
+      width = width,
+      height = height,
+      style = "minimal",
+      border = "rounded",
+    })
+    vim.wo[win].wrap = false
+    vim.wo[win].cursorline = true
+    for _, key in ipairs({ "q", "<Esc>" }) do
+      vim.keymap.set("n", key, function()
+        vim.api.nvim_win_close(win, true)
+        vim.api.nvim_buf_delete(buf, { force = true })
+      end, { buffer = buf, nowait = true })
+    end
+  end, { desc = "Show wiki.nvim command reference" })
+
   -- hover preview on CursorHold
   require("wiki.hover").setup_autocmd(with_root())
 
