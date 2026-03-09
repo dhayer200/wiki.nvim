@@ -27,7 +27,6 @@ function M.complete(Wiki)
     local base_lc = (base or ""):lower()
 
     for _, p in ipairs(Wiki._cache.files) do
-      local name = util.file_display_name(p)        -- e.g. "note.md"
       local stem = vim.fn.fnamemodify(p, ":t:r")    -- e.g. "note"
       if stem:lower():find(base_lc, 1, true) then
         local insert = inside and stem or ("[[" .. stem .. "]]")
