@@ -50,6 +50,7 @@ require("wiki").setup({
 | `:WikiPanel` | Open a vertical split showing outgoing links and backlinks for the current note. |
 | `:WikiGraph` | Start a local server and open the graph view in the browser. |
 | `:WikiDaily` | Open (or create) today's daily note (`YYYY-MM-DD.md`). |
+| `:WikiIndex` | Generate `index.md` — all notes sorted oldest-first with creation dates. |
 
 ## Keymaps
 

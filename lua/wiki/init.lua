@@ -54,6 +54,11 @@ function Wiki.setup(opts)
     require("wiki.panel").links_panel(with_root())
   end, { desc = "Open outgoing links + backlinks panel" })
 
+  vim.api.nvim_create_user_command("WikiIndex", function()
+    require("wiki.scan").refresh_cache_if_needed(with_root())
+    require("wiki.index").generate_index(with_root())
+  end, { desc = "Generate index.md sorted by creation date" })
+
   vim.api.nvim_create_user_command("WikiGraph", function()
     require("wiki.graph").generate(with_root())
   end, { desc = "Generate and open wiki graph in browser" })
