@@ -44,7 +44,6 @@ function Wiki.setup(opts)
       vim.schedule(function()
         local path = active_root() .. "/" .. stem .. ".md"
         require("wiki.util").ensure_file(path)
-        vim.cmd({ cmd = "edit", args = { path } })
       end)
     end,
   })
