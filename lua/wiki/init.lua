@@ -88,24 +88,15 @@ function Wiki.setup(opts)
     local items = {}
     for _, p in ipairs(W._cache.files) do
       local name = vim.fn.fnamemodify(p, ":t:r")
-      local first = ""
-      local ok, lines = pcall(vim.fn.readfile, p, "", 5)
-      if ok then
-        for _, l in ipairs(lines) do
-          local t = l:gsub("^#+%s*", ""):gsub("^=%s*", ""):gsub("^%s+", ""):gsub("%s+$", "")
-          if t ~= "" then first = t; break end
-        end
-      end
-      table.insert(items, { name = name, blurb = first, path = p })
+      local stat = vim.loop.fs_stat(p)
+      local date = stat and os.date("%Y-%m-%d", stat.mtime.sec) or ""
+      table.insert(items, { name = name, date = date, path = p })
     end
     table.sort(items, function(a, b) return a.name < b.name end)
     vim.ui.select(items, {
       prompt = "Wiki notes",
       format_item = function(item)
-        if item.blurb ~= "" then
-          return string.format("%-30s  %s", item.name, item.blurb)
-        end
-        return item.name
+        return string.format("%-30s  %s", item.name, item.date)
       end,
     }, function(choice)
       if choice then
