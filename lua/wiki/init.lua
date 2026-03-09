@@ -153,7 +153,7 @@ function Wiki.setup(opts)
       "  INSERT MODE                                                      ",
       "  <C-x><C-u>         Open wiki completion picker                   ",
       "  <C-n> / <C-p>      Next / previous item in picker                ",
-      "  <C-y>              Confirm selected item                         ",
+      "  <CR>               Confirm selected item                         ",
       "  <C-e>              Cancel completion                             ",
       "  <C-u>              Revert to original typed text                 ",
       "                                                                   ",
