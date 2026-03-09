@@ -46,12 +46,11 @@ require("wiki").setup({
 
 | Command | Action |
 |---------|--------|
-| `:WikiLink` | If cursor is on `[[target]]` → jump to / create that note. Otherwise → enter insert mode and open wikilink completion picker. |
+| `:WikiLink` | No arg: if cursor is on `[[target]]` → jump; otherwise → open completion picker. With arg (`:WikiLink name[.ext]`): insert `[[name]]` at cursor and create the file (defaults to `.md`). |
 | `:WikiPanel` | Open a vertical split showing outgoing links and backlinks for the current note. |
 | `:WikiGraph` | Start a local server and open the graph view in the browser. |
 | `:WikiDaily` | Open (or create) today's daily note (`YYYY-MM-DD.md`). |
 | `:WikiIndex` | Generate `index.md` — all notes sorted oldest-first with creation dates. |
-| `:WikiCreate <name[.ext]>` | Insert `[[name]]` at cursor and create `wiki_root/name.ext` (defaults to `.md`). |
 | `:WikiRename` | Rename current file or the `[[wikilink]]` under cursor; updates all backlinks. |
 | `:WikiSearch` | Fuzzy-pick and open any note. |
 

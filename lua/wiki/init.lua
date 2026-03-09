@@ -37,39 +37,35 @@ function Wiki.setup(opts)
     require("wiki.gf").gf_create(with_root())
   end, { desc = "wiki: open/create wikilink, URL, or file" })
 
-  -- WikiLink: jump if on [[...]], else trigger completion
-  vim.api.nvim_create_user_command("WikiLink", function()
-    local line = vim.fn.getline(".")
-    local col0 = vim.fn.col(".") - 1
-    local util = require("wiki.util")
-    local target = util.wiki_target_under_cursor()
-    if target and util.is_inside_wikilink(line, col0) then
-      require("wiki.gf").gf_create(with_root())
-    else
-      local keys = vim.api.nvim_replace_termcodes("a<C-x><C-u>", true, false, true)
-      vim.api.nvim_feedkeys(keys, "n", false)
-    end
-  end, { desc = "Jump to wikilink under cursor, or trigger completion" })
-
-  -- WikiCreate filename[.ext] — inserts [[filename]] at cursor and creates the file
-  vim.api.nvim_create_user_command("WikiCreate", function(opts_cmd)
+  -- WikiLink: with arg → create file + insert [[name]]; without arg → jump or complete
+  vim.api.nvim_create_user_command("WikiLink", function(opts_cmd)
     local arg = vim.trim(opts_cmd.args)
-    if arg == "" then return end
-    local filename = arg:match("^([^%s]+)")
-    -- default to .md if no extension given
-    if not filename:match("%.[%w_%-]+$") then
-      filename = filename .. ".md"
+    if arg ~= "" then
+      -- :WikiLink filename[.ext] — create file and insert [[name]] at cursor
+      local filename = arg:match("^([^%s]+)")
+      if not filename:match("%.[%w_%-]+$") then filename = filename .. ".md" end
+      local display = vim.fn.fnamemodify(filename, ":r")
+      local path = active_root() .. "/" .. filename
+      require("wiki.util").ensure_file(path)
+      local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+      local cur_line = vim.api.nvim_get_current_line()
+      local insert = "[[" .. display .. "]]"
+      vim.api.nvim_set_current_line(cur_line:sub(1, col) .. insert .. cur_line:sub(col + 1))
+      vim.api.nvim_win_set_cursor(0, { row, col + #insert })
+    else
+      -- :WikiLink (no arg) — jump if on [[...]], else trigger completion
+      local line = vim.fn.getline(".")
+      local col0 = vim.fn.col(".") - 1
+      local util = require("wiki.util")
+      local target = util.wiki_target_under_cursor()
+      if target and util.is_inside_wikilink(line, col0) then
+        require("wiki.gf").gf_create(with_root())
+      else
+        local keys = vim.api.nvim_replace_termcodes("a<C-x><C-u>", true, false, true)
+        vim.api.nvim_feedkeys(keys, "n", false)
+      end
     end
-    local display = vim.fn.fnamemodify(filename, ":r")
-    local path = active_root() .. "/" .. filename
-    require("wiki.util").ensure_file(path)
-    local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-    local cur_line = vim.api.nvim_get_current_line()
-    local insert = "[[" .. display .. "]]"
-    local new_line = cur_line:sub(1, col) .. insert .. cur_line:sub(col + 1)
-    vim.api.nvim_set_current_line(new_line)
-    vim.api.nvim_win_set_cursor(0, { row, col + #insert })
-  end, { nargs = 1, desc = "Create file and insert [[name]] at cursor" })
+  end, { nargs = "?", desc = "Jump/complete wikilink, or :WikiLink name[.ext] to create" })
 
   -- WikiRename — smart rename with backlink update
   vim.api.nvim_create_user_command("WikiRename", function()
