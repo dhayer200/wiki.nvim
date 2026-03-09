@@ -129,7 +129,8 @@ const server = http.createServer((req, res) => {
     catch { res.writeHead(500); res.end('tmpdir error'); return; }
 
     const outPath = path.join(tmpDir, 'out.svg');
-    execFile('typst', ['compile', typFile, outPath], err => {
+    const execEnv = { ...process.env, PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:' + (process.env.PATH || '') };
+    execFile('typst', ['compile', typFile, outPath], { env: execEnv }, err => {
       if (err) {
         try { fs.rmSync(tmpDir, { recursive: true }); } catch {}
         res.writeHead(500); res.end('typst: ' + err.message);

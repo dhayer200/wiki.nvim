@@ -17,7 +17,7 @@ function M.complete(Wiki)
         end
         start = start - 1
       end
-      return start + 1  -- IMPORTANT FIX
+      return start
     end
 
     scan.refresh_cache_if_needed(Wiki)
