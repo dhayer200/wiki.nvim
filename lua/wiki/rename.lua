@@ -33,6 +33,7 @@ function M.rename(Wiki)
   vim.ui.input({ prompt = prompt }, function(input)
     if not input or vim.trim(input) == "" then return end
     local new_base = vim.trim(input):gsub("[\r\n]", "")
+    vim.schedule(function()
 
     -- keep same extension if user didn't supply one
     local old_ext = vim.fn.fnamemodify(old_file, ":e")
@@ -94,6 +95,7 @@ function M.rename(Wiki)
 
     vim.notify(string.format("WikiRename: '%s' → '%s'  (%d file(s) updated)",
       old_name, new_display, updated))
+    end) -- vim.schedule
   end)
 end
 
