@@ -1,32 +1,31 @@
 # wiki.nvim
 
-A lightweight personal wiki plugin for Neovim. Navigate and create `[[wikilink]]` notes, see backlinks, manage outgoing links, and generate a browser-based graph view — no external dependencies beyond `ripgrep` for backlink search.
+A lightweight personal wiki plugin for Neovim. Navigate `[[wikilink]]` notes, browse outgoing links and backlinks, and explore your knowledge graph in the browser.
 
 ## Features
 
-- `[[wikilink]]` navigation and auto-creation via `gf`
-- Backlinks via quickfix
-- Outgoing + backlink panel in a vertical split
-- Wikilink completion (`<C-x><C-u>`) in markdown, typst, and text files
-- Browser graph view — Wikipedia-style homepage with D3 force graph
-- User commands for all actions
-- Configurable root directory and file extensions
+- `gf` opens or creates the wikilink under the cursor
+- `<C-x><C-u>` wikilink completion in markdown, typst, and text files
+- Outgoing links + backlinks in a vertical split panel
+- Browser graph view — D3 force graph with note reader, search, and live reload
+- Supports `.md`, `.typ` (Typst), and `.txt` files
 
 ## Requirements
 
 - Neovim 0.10+
-- [`ripgrep`](https://github.com/BurntSushi/ripgrep) (for backlinks)
+- Node.js (for `:WikiGraph`)
+- [`ripgrep`](https://github.com/BurntSushi/ripgrep) (for backlink search in panel)
 
 ## Installation
-
-**vim-plug**
-```vim
-Plug 'dhayer200/wiki.nvim'
-```
 
 **lazy.nvim**
 ```lua
 { "dhayer200/wiki.nvim" }
+```
+
+**vim-plug**
+```vim
+Plug 'dhayer200/wiki.nvim'
 ```
 
 **vim.pack (Neovim 0.11+)**
@@ -38,8 +37,8 @@ vim.pack.add({ src = "https://github.com/dhayer200/wiki.nvim" })
 
 ```lua
 require("wiki").setup({
-  root = "~/brain/notes",               -- default
-  extensions = { "md", "typ", "txt" },  -- default
+  root = "~/notes",                     -- wiki directory (default: cwd)
+  extensions = { "md", "typ", "txt" },  -- file types to scan
 })
 ```
 
@@ -47,37 +46,41 @@ require("wiki").setup({
 
 | Command | Action |
 |---------|--------|
-| `:WikiCreate` | Open wikilink under cursor; create file if it doesn't exist |
-| `:WikiLink` | Same as `:WikiCreate` |
-| `:WikiBacklinks` | Show backlinks to current note in quickfix |
-| `:WikiPanel` | Open panel with outgoing links and backlinks |
-| `:WikiHelp` | Open wiki helper.md reference in a vertical split |
-| `:WikiGraph` | Generate `~/brain/brain.html` and open it in the browser |
+| `:WikiLink` | If cursor is on `[[target]]` → jump to / create that note. Otherwise → enter insert mode and open wikilink completion picker. |
+| `:WikiPanel` | Open a vertical split showing outgoing links and backlinks for the current note. |
+| `:WikiGraph` | Start a local server and open the graph view in the browser. |
+| `:WikiDaily` | Open (or create) today's daily note (`YYYY-MM-DD.md`). |
 
 ## Keymaps
 
-The plugin sets `gf` to open/create wikilinks. Bind the commands however you like:
+`gf` is remapped to follow wikilinks (and create missing files). Suggested bindings:
 
 ```lua
-vim.keymap.set("n", "<leader>wb", ":WikiBacklinks<cr>")
-vim.keymap.set("n", "<leader>ww", ":WikiPanel<cr>")
-vim.keymap.set("n", "<leader>hh", ":WikiHelp<cr>")
+vim.keymap.set("n", "<leader>wl", ":WikiLink<cr>")
+vim.keymap.set("n", "<leader>wp", ":WikiPanel<cr>")
 vim.keymap.set("n", "<leader>wg", ":WikiGraph<cr>")
+vim.keymap.set("n", "<leader>wd", ":WikiDaily<cr>")
 ```
 
-In the links panel: `<CR>` jumps to the note, `q` closes.
+## Wikilink completion
 
-Wikilink completion triggers with `<C-x><C-u>` inside any `[[` in markdown, typst, or text files.
+In insert mode, `<C-x><C-u>` completes wikilinks from your wiki root:
+
+- Inside `[[...]]` — inserts the note name only
+- Outside — wraps the completion in `[[...]]`
+
+`:WikiLink` from normal mode does the same: if your cursor is already inside `[[...]]`, it jumps to that note; otherwise it triggers the completion picker.
 
 ## WikiGraph
 
-`:WikiGraph` scans your wiki root, parses all `[[wikilinks]]`, and generates a self-contained `brain.html` that opens in your browser. It shows:
+`:WikiGraph` scans the wiki root, parses all `[[wikilinks]]`, and opens a self-contained graph in your browser. It includes:
 
-- **Featured** — 5 random notes from your wiki with a blurb
-- **Graph** — D3 force-directed graph; nodes sized by link count, click to highlight
-- **All Notes** — table of every note and what it links to
+- **Featured** — 5 random notes with a blurb
+- **Graph** — D3 force-directed graph; nodes sized by link count; click to open the note reader
+- **All Notes** — sortable table of every note and its links
+- **Note reader** — renders markdown (with LaTeX via KaTeX) and Typst files; shows outgoing links and backlinks; live-reloads on file save
 
-Requires an internet connection to load D3.js from CDN.
+Requires an internet connection to load D3 and KaTeX from CDN.
 
 ## License
 
