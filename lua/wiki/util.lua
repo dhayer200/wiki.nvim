@@ -27,11 +27,35 @@ function M.rg_escape(s)
   return (s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?%{%}%|\\])", "\\%1"))
 end
 
-function M.ensure_file(path)
+-- resolve template content for a new note
+-- looks for: wiki_root/_templates/<ext>.md, then wiki_root/_template.md
+-- replaces {{title}} with the note stem
+local function template_lines(wiki_root, path)
+  local stem = vim.fn.fnamemodify(path, ":t:r")
+  local ext  = vim.fn.fnamemodify(path, ":e")
+  local candidates = {
+    wiki_root .. "/_templates/" .. ext .. ".md",
+    wiki_root .. "/_template.md",
+  }
+  for _, t in ipairs(candidates) do
+    if vim.fn.filereadable(t) == 1 then
+      local lines = vim.fn.readfile(t)
+      for i, l in ipairs(lines) do
+        lines[i] = l:gsub("{{title}}", stem)
+      end
+      return lines
+    end
+  end
+  -- default: just a heading
+  return { "# " .. stem, "", "" }
+end
+
+function M.ensure_file(path, wiki_root)
   local dir = vim.fn.fnamemodify(path, ":h")
   vim.fn.mkdir(dir, "p")
   if vim.fn.filereadable(path) == 0 then
-    vim.fn.writefile({}, path)
+    local lines = wiki_root and template_lines(wiki_root, path) or {}
+    vim.fn.writefile(lines, path)
   end
 end
 
@@ -46,7 +70,7 @@ function M.ensure_note_path(Wiki, name)
     path = Wiki.root .. "/" .. path
   end
 
-  M.ensure_file(path)
+  M.ensure_file(path, Wiki and Wiki.root)
   return path
 end
 

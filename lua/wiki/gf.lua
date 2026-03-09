@@ -39,7 +39,7 @@ function M.gf_create(Wiki)
     path = Wiki.root .. "/" .. path
   end
 
-  util.ensure_file(path)
+  util.ensure_file(path, Wiki.root)
   vim.cmd({ cmd = "edit", args = { path } })
 end
 

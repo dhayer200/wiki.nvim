@@ -42,8 +42,9 @@ function Wiki.setup(opts)
       local stem = word:match("%[%[(.-)%]%]") or word
       if stem == "" then return end
       vim.schedule(function()
-        local path = active_root() .. "/" .. stem .. ".md"
-        require("wiki.util").ensure_file(path)
+        local root = active_root()
+        local path = root .. "/" .. stem .. ".md"
+        require("wiki.util").ensure_file(path, root)
       end)
     end,
   })
@@ -61,8 +62,9 @@ function Wiki.setup(opts)
       local filename = arg:match("^([^%s]+)")
       if not filename:match("%.[%w_%-]+$") then filename = filename .. ".md" end
       local display = vim.fn.fnamemodify(filename, ":r")
-      local path = active_root() .. "/" .. filename
-      require("wiki.util").ensure_file(path)
+      local root = active_root()
+      local path = root .. "/" .. filename
+      require("wiki.util").ensure_file(path, root)
       local row, col = unpack(vim.api.nvim_win_get_cursor(0))
       local cur_line = vim.api.nvim_get_current_line()
       local insert = "[[" .. display .. "]]"
